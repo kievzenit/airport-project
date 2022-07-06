@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Operations Version="1.0" xmlns="http://schemas.microsoft.com/sqlserver/dac/Serialization/2012/02">
+  <Operation Name="Rename Refactor" Key="8c373569-3b56-404d-8bb3-1766c786de23" ChangeDateTime="06/26/2022 11:03:08">
+    <Property Name="ElementName" Value="[dbo].[Flight].[termianl]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Flight]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="terminal" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="ac2a8e2d-b3fb-429f-8e12-73642e1dafe6" ChangeDateTime="06/26/2022 11:13:40">
+    <Property Name="ElementName" Value="[dbo].[Passenger].[lastaname]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Passenger]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="lastname" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="b9c0d6f4-3c49-4797-86c9-698d097900e9" ChangeDateTime="06/26/2022 11:14:16">
+    <Property Name="ElementName" Value="[dbo].[Passenger].[natinality]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Passenger]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="nationality" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="80254d50-7756-4252-9d60-7a00b1db0d35" ChangeDateTime="07/02/2022 11:36:45">
+    <Property Name="ElementName" Value="[dbo].[PassengersTickets].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[PassengersTickets]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="passeneger_id" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="b277db0b-6e19-413a-bb82-749bc22d5f13" ChangeDateTime="07/02/2022 11:39:23">
+    <Property Name="ElementName" Value="[dbo].[PassengersTickets].[passeneger_id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[PassengersTickets]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="passenger_id" />
+  </Operation>
+</Operations>
