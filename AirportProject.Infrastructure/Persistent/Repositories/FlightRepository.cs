@@ -1,6 +1,7 @@
 ﻿using AirportProject.Domain;
 using AirportProject.DTOs;
 using AirportProject.Infrastructure.Persistent.Abstract;
+using AirportProject.Infrastructure.Persistent.Casting;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,15 +9,9 @@ using System.Threading.Tasks;
 
 namespace AirportProject.Infrastructure.Persistent.Repositories
 {
-    public class FlightRepository : AbstractRepository, IFlightRepository
+    public class FlightRepository : IFlightRepository
     {
-        private AirportProjectDBContext dBContext;
-
-        protected override AirportProjectDBContext context
-        {
-            get => this.dBContext;
-            set => this.dBContext = value;
-        }
+        private readonly AirportProjectDBContext context;
 
         public FlightRepository(AirportProjectDBContext context)
         {
@@ -25,7 +20,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
 
         public async Task<FlightDTO> Create(FlightDTO flightDTO)
         {
-            var flight = await this.FlightDTOToFlight(flightDTO);
+            var flight = await flightDTO.ToFlight(this.context);
 
             if (flight == null)
                 return default;
@@ -65,7 +60,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             if (flight == null)
                 return false;
 
-            var tickets =  await this.context.Tickets
+            var tickets = await this.context.Tickets
                 .Where(t => t.Flight == flight)
                 .ToListAsync();
 
@@ -89,7 +84,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
         {
             var flights = await this.context.Flights.ToListAsync();
 
-            return await this.FlightsToFlightDTOs(flights);
+            return await flights.ToFlightDTOs(this.context);
         }
 
         public async Task<IEnumerable<FlightDTO>> GetRange(int offset, int count)
@@ -99,7 +94,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
                 .Take(count)
                 .ToListAsync();
 
-            return await this.FlightsToFlightDTOs(flights);
+            return await flights.ToFlightDTOs(this.context);
         }
 
         public async Task<bool> Update(FlightDTO flightDTO)

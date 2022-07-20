@@ -40,7 +40,9 @@ namespace AirportProject
             });
 
             services.AddDbContext<AirportProjectDBContext>(options =>
-                options.UseLazyLoadingProxies().UseSqlServer(Configuration.GetConnectionString("AirportProjectDB")));
+                options
+                .UseLazyLoadingProxies()
+                .UseSqlServer(Configuration.GetConnectionString("AirportProjectDB")));
 
             services.AddInfrastructure();
         }

@@ -1,6 +1,7 @@
 ﻿using AirportProject.Domain;
 using AirportProject.DTOs;
 using AirportProject.Infrastructure.Persistent.Abstract;
+using AirportProject.Infrastructure.Persistent.Casting;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,15 +9,9 @@ using System.Threading.Tasks;
 
 namespace AirportProject.Infrastructure.Persistent.Repositories
 {
-    public class PassengerRepository : AbstractRepository, IPassengerRepository
+    public class PassengerRepository : IPassengerRepository
     {
-        private AirportProjectDBContext dBContext;
-
-        protected override AirportProjectDBContext context
-        {
-            get => this.dBContext;
-            set => this.dBContext = value;
-        }
+        private readonly AirportProjectDBContext context;
 
         public PassengerRepository(AirportProjectDBContext context)
         {
@@ -25,7 +20,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
 
         public async Task<PassengerDTO> Create(PassengerDTO passengerDTO)
         {
-            var passenger = await this.PassengerDTOToPassenger(passengerDTO);
+            var passenger = await passengerDTO.ToPassenger();
 
             await this.context.AddAsync(passenger);
             await this.context.SaveChangesAsync();
@@ -57,7 +52,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
         {
             var passengers = await this.context.Passengers.ToListAsync();
 
-            return await this.PassengersToPassengerDTOs(passengers);
+            return await passengers.ToPassengerDTOs();
         }
 
         public async Task<IEnumerable<PassengerDTO>> GetRange(int offset, int count)
@@ -67,7 +62,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
                 .Take(count)
                 .ToListAsync();
 
-            return await this.PassengersToPassengerDTOs(passengers);
+            return await passengers.ToPassengerDTOs();
         }
 
         public async Task<bool> Update(PassengerDTO passengerDTO)

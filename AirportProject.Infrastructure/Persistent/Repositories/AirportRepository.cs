@@ -1,6 +1,7 @@
 ﻿using AirportProject.Domain;
 using AirportProject.DTOs;
 using AirportProject.Infrastructure.Persistent.Abstract;
+using AirportProject.Infrastructure.Persistent.Casting;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,15 +9,9 @@ using System.Threading.Tasks;
 
 namespace AirportProject.Infrastructure.Persistent.Repositories
 {
-    public class AirportRepository : AbstractRepository, IAirportRepository
+    public class AirportRepository : IAirportRepository
     {
-        private AirportProjectDBContext dBContext;
-
-        protected override AirportProjectDBContext context
-        {
-            get => this.dBContext;
-            set => this.dBContext = value;
-        }
+        private readonly AirportProjectDBContext context;
 
         public AirportRepository(AirportProjectDBContext context)
         {
@@ -25,7 +20,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
 
         public async Task<AirportDTO> Create(AirportDTO airportDTO)
         {
-            var airport = await this.AirportDTOToAirport(airportDTO);
+            var airport = await airportDTO.ToAirport();
 
             await this.context.AddAsync(airport);
             await this.context.SaveChangesAsync();
@@ -79,7 +74,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
         {
             var airports = await this.context.Airports.ToListAsync();
 
-            return await this.AirportsToAirportDTOs(airports);
+            return await airports.ToAirportDTOs();
         }
 
         public async Task<IEnumerable<AirportDTO>> GetRange(int offset, int count)
@@ -89,7 +84,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
                 .Take(count)
                 .ToListAsync();
 
-            return await this.AirportsToAirportDTOs(airports);
+            return await airports.ToAirportDTOs();
         }
 
         public async Task<bool> Update(AirportDTO airportDTO)
