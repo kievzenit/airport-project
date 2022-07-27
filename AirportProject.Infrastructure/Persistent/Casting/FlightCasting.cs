@@ -1,5 +1,5 @@
-﻿using AirportProject.Domain;
-using AirportProject.DTOs;
+﻿using AirportProject.Domain.DTOs;
+using AirportProject.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;

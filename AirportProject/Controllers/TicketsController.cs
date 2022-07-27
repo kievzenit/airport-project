@@ -1,4 +1,4 @@
-﻿using AirportProject.DTOs;
+﻿using AirportProject.Domain.DTOs;
 using AirportProject.Infrastructure.Persistent.Abstract;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;

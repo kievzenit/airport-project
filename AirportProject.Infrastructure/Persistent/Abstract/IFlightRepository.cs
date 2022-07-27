@@ -1,5 +1,4 @@
-﻿using AirportProject.Domain;
-using AirportProject.DTOs;
+﻿using AirportProject.Domain.DTOs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

@@ -1,4 +1,4 @@
-﻿using AirportProject.Domain;
+﻿using AirportProject.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AirportProject.Infrastructure.Persistent
@@ -17,7 +17,8 @@ namespace AirportProject.Infrastructure.Persistent
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<PassengersTickets>().HasKey(table => new {
+            builder.Entity<PassengersTickets>().HasKey(table => new
+            {
                 table.PassengerId,
                 table.TicketId
             });

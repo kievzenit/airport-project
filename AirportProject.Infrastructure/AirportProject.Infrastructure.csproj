@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AirportProject.Domain\AirportProject.Domain.csproj" />
-    <ProjectReference Include="..\AirportProject.DTOs\AirportProject.DTOs.csproj" />
   </ItemGroup>
 
 </Project>
