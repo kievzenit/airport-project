@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace AirportProject.DTOs.Validation
+namespace AirportProject.Domain.DTOs.Validation
 {
     public static class DTOValidation
     {

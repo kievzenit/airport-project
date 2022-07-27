@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AirportProject.Domain
+namespace AirportProject.Domain.Models
 {
     [Table("Flight")]
     public class Flight
