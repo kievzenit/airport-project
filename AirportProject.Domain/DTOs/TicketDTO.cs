@@ -15,6 +15,7 @@ namespace AirportProject.Domain.DTOs
         [StringLength(50)]
         public string To { get; set; }
         [Column("ticketType")]
+        [StringLength(8)]
         [Required]
         [RegularExpression("^economy$|^business$")]
         public string Type { get; set; }

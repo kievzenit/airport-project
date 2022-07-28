@@ -11,12 +11,15 @@ namespace AirportProject.Domain.DTOs
         [Column("id")]
         public int Id { get; set; }
         [Column("arrivalAirport")]
+        [StringLength(50)]
         [Required]
         public string ArrivalAirportName { get; set; }
         [Column("departureAirport")]
+        [StringLength(50)]
         [Required]
         public string DepartureAirportName { get; set; }
         [Column("terminal")]
+        [StringLength(1)]
         [Required]
         [RegularExpression("[A-Z]")]
         public char Terminal { get; set; }
