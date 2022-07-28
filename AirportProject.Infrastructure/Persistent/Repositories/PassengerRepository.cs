@@ -120,6 +120,11 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             var passenger = await this.context.Passengers
                 .FirstOrDefaultAsync(p => p.Passport == passport);
 
+            if (passenger == null)
+            {
+                return default;
+            }
+
             var passengerDTO = await passenger.ToPassengerDTO();
 
             return passengerDTO;
