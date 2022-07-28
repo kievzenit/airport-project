@@ -3,6 +3,7 @@ using AirportProject.Domain.DTOs.Validation;
 using AirportProject.Infrastructure.Persistent.Abstract;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace AirportProject.Controllers
@@ -113,6 +114,50 @@ namespace AirportProject.Controllers
                 this.Response.StatusCode = 404;
                 return;
             }
+        }
+
+        [HttpGet("search/byPassport")]
+        public async Task<PassengerDTO> SearchByPassport(string passport)
+        {
+            if (passport == null || passport.Length != 8 || !Regex.IsMatch(passport, "^[a-z]{2}\\d{6}$"))
+            {
+                this.Response.StatusCode = 400;
+                return default;
+            }
+
+            var passengerDTO = await this.repository.SearchByPassport(passport);
+
+            if (passengerDTO == null)
+            {
+                this.Response.StatusCode = 404;
+                return default;
+            }
+
+            return passengerDTO;
+        }
+
+        [HttpGet("search/byFirtsname")]
+        public async Task<IEnumerable<PassengerDTO>> SearchByFirstname(string firstname)
+        {
+            if (firstname == null || firstname.Length > 50 || firstname.Length == 0)
+            {
+                this.Response.StatusCode = 400;
+                return default;
+            }
+
+            return await this.repository.SearchByFirstname(firstname);
+        }
+
+        [HttpGet("search/byLastname")]
+        public async Task<IEnumerable<PassengerDTO>> SearchByLastname(string lastname)
+        {
+            if (lastname == null || lastname.Length > 50 || lastname.Length == 0)
+            {
+                this.Response.StatusCode = 400;
+                return default;
+            }
+
+            return await this.repository.SearchByLastname(lastname);
         }
     }
 }
