@@ -23,7 +23,6 @@ namespace AirportProject.Domain.Models
         public virtual Airport DepartureAirport { get; set; }
         [Required]
         [Column("terminal")]
-        [RegularExpression("[A-Z]")]
         public char Terminal { get; set; }
         [Required]
         [Column("arrival_time")]
@@ -33,8 +32,6 @@ namespace AirportProject.Domain.Models
         public DateTime DepartureTime { get; set; }
         [Required]
         [Column("status")]
-        [StringLength(8)]
-        [RegularExpression("^normal$|^delayed$|^canceled$")]
         public string Status { get; set; }
     }
 }

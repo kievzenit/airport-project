@@ -21,7 +21,6 @@ namespace AirportProject.Domain.Models
         public decimal Price { get; set; }
         [Required]
         [Column("type")]
-        [RegularExpression("^economy$|^business$")]
         public string Type { get; set; }
         [Required]
         [Column("flight_id")]
