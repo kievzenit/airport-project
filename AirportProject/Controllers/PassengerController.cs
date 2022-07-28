@@ -116,7 +116,7 @@ namespace AirportProject.Controllers
             }
         }
 
-        [HttpGet("search/byPassport")]
+        [HttpGet("search/byPassport/{passport}")]
         public async Task<PassengerDTO> SearchByPassport(string passport)
         {
             if (passport == null || passport.Length != 8 || !Regex.IsMatch(passport, "^[a-z]{2}\\d{6}$"))
@@ -136,7 +136,7 @@ namespace AirportProject.Controllers
             return passengerDTO;
         }
 
-        [HttpGet("search/byFirtsname")]
+        [HttpGet("search/byFirtsname/{firstname}")]
         public async Task<IEnumerable<PassengerDTO>> SearchByFirstname(string firstname)
         {
             if (firstname == null || firstname.Length > 50 || firstname.Length == 0)
@@ -148,7 +148,7 @@ namespace AirportProject.Controllers
             return await this.repository.SearchByFirstname(firstname);
         }
 
-        [HttpGet("search/byLastname")]
+        [HttpGet("search/byLastname/{lastname}")]
         public async Task<IEnumerable<PassengerDTO>> SearchByLastname(string lastname)
         {
             if (lastname == null || lastname.Length > 50 || lastname.Length == 0)

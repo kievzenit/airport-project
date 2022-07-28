@@ -79,16 +79,16 @@ namespace AirportProject.Controllers
             }
         }
 
-        [HttpGet("search/byFlightId")]
-        public async Task<FlightDTO> SearchByFlightId(int id)
+        [HttpGet("search/byFlightId/{flightId}")]
+        public async Task<FlightDTO> SearchByFlightId(int flightId)
         {
-            if (id <= 0)
+            if (flightId <= 0)
             {
                 this.Response.StatusCode = 400;
                 return default;
             }
 
-            var flightDTO = await this.repository.SearchByFlightNumber(id);
+            var flightDTO = await this.repository.SearchByFlightNumber(flightId);
 
             if (flightDTO == null)
             {
@@ -99,7 +99,7 @@ namespace AirportProject.Controllers
             return flightDTO;
         }
 
-        [HttpGet("search/byFlightArrivalAirport")]
+        [HttpGet("search/byFlightArrivalAirport/{airportName}")]
         public async Task<IEnumerable<FlightDTO>> SearchByFlightArrivalAirport(string airportName)
         {
             if (airportName == null || airportName.Length > 50)
@@ -111,7 +111,7 @@ namespace AirportProject.Controllers
             return await this.repository.SearchByFlightArrivalAirport(airportName);
         }
 
-        [HttpGet("search/byFlightDepartureAirport")]
+        [HttpGet("search/byFlightDepartureAirport/{airportName}")]
         public async Task<IEnumerable<FlightDTO>> SearchByFlightDepartureAirport(string airportName)
         {
             if (airportName == null || airportName.Length > 50)
