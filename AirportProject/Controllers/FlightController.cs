@@ -78,5 +78,49 @@ namespace AirportProject.Controllers
                 return;
             }
         }
+
+        [HttpGet("search/byFlightId")]
+        public async Task<FlightDTO> SearchByFlightId(int id)
+        {
+            if (id <= 0)
+            {
+                this.Response.StatusCode = 400;
+                return default;
+            }
+
+            var flightDTO = await this.repository.SearchByFlightNumber(id);
+
+            if (flightDTO == null)
+            {
+                this.Response.StatusCode = 404;
+                return default;
+            }
+
+            return flightDTO;
+        }
+
+        [HttpGet("search/byFlightArrivalAirport")]
+        public async Task<IEnumerable<FlightDTO>> SearchByFlightArrivalAirport(string airportName)
+        {
+            if (airportName == null || airportName.Length > 50)
+            {
+                this.Response.StatusCode = 400;
+                return default;
+            }
+
+            return await this.repository.SearchByFlightArrivalAirport(airportName);
+        }
+
+        [HttpGet("search/byFlightDepartureAirport")]
+        public async Task<IEnumerable<FlightDTO>> SearchByFlightDepartureAirport(string airportName)
+        {
+            if (airportName == null || airportName.Length > 50)
+            {
+                this.Response.StatusCode = 400;
+                return default;
+            }
+
+            return await this.repository.SearchByFlightDepartureAirport(airportName);
+        }
     }
 }
