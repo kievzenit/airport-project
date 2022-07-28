@@ -172,6 +172,11 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             var flight = await this.context.Flights
                 .FirstOrDefaultAsync(f => f.Id == id);
 
+            if (flight == null)
+            {
+                return default;
+            }
+
             var flightDTO = await flight.ToFlightDTO(this.context);
 
             return flightDTO;
