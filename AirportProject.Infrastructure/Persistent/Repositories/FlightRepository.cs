@@ -144,5 +144,37 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
 
             return true;
         }
+
+        public async Task<IEnumerable<FlightDTO>> SearchByFlightArrivalAirport(string airportName)
+        {
+            var flights = await this.context.Flights
+                .Where(f => f.ArrivalAirport.Name == airportName)
+                .ToListAsync();
+
+            var flightDTOs = await flights.ToFlightDTOs(this.context);
+
+            return flightDTOs;
+        }
+
+        public async Task<IEnumerable<FlightDTO>> SearchByFlightDepartureAirport(string airportName)
+        {
+            var flights = await this.context.Flights
+                .Where(f => f.DepartureAirport.Name == airportName)
+                .ToListAsync();
+
+            var flightDTOs = await flights.ToFlightDTOs(this.context);
+
+            return flightDTOs;
+        }
+
+        public async Task<FlightDTO> SearchByFlightNumber(int id)
+        {
+            var flight = await this.context.Flights
+                .FirstOrDefaultAsync(f => f.Id == id);
+
+            var flightDTO = await flight.ToFlightDTO(this.context);
+
+            return flightDTO;
+        }
     }
 }
