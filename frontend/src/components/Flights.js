@@ -704,7 +704,7 @@ class Flights extends React.Component {
         let tr = e.target.closest("tr");
         let id = tr.children[0].innerText;
 
-        if (!confirm('This operation cannot be undone')) {
+        if (!window.confirm('This operation cannot be undone')) {
             return;
         }
 
