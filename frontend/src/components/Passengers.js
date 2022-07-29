@@ -10,6 +10,10 @@ class Passengers extends React.Component {
         this.apiUrl = 'http://api.airportproject.com/passenger/';
         this.ticketApiUrl = 'http://api.airportproject.com/tickets/search';
 
+        this.search = this.search.bind(this);
+        this.openSearch = this.openSearch.bind(this);
+        this.closeSearch = this.closeSearch.bind(this);
+
         this.setPassengers = this.setPassengers.bind(this);
         this.showTickets = this.showTickets.bind(this);
 
@@ -27,7 +31,10 @@ class Passengers extends React.Component {
         this.closeTickets = this.closeTickets.bind(this);
         this.deleteRow = this.deleteRow.bind(this);
 
+        this.setCurrentPassengerId = this.setCurrentPassengerId.bind(this);
+
         this.isInvokedByEditModal = false;
+        this.isInvokedBySearch = false;
 
         this.passengers = [];
     }
@@ -52,7 +59,10 @@ class Passengers extends React.Component {
                 <br />
 
                 <div className="container">
-                    <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNewPassengerModal">Add new passenger</button>
+                    <div className="d-flex justify-content-between">
+                        <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNewPassengerModal">Add new passenger</button>
+                        <button type="button" className="btn btn-dark" onClick={this.openSearch}>Search</button>
+                    </div>
                     <br />
                     <br />
                     <table className="table table-striped">
@@ -90,6 +100,56 @@ class Passengers extends React.Component {
                                 <th scope="col">Arrival time</th>
                                 <th scope="col">Price</th>
                                 <th scope="col" style={{ width: "58px" }}>Controls</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div className="container" id="passengers-found-table" style={{
+                    display: 'none'
+                }}>
+                    <div className="d-flex justify-content-between">
+                        <button type="button" className="btn btn-danger" onClick={this.closeSearch}>Close search</button>
+
+                        <div className="btn-group">
+                            <div className="dropdown">
+                                <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style={{
+                                    borderTopRightRadius: 0,
+                                    borderBottomRightRadius: 0
+                                }}>
+                                    Search by passport
+                                </button>
+                                <ul className="dropdown-menu">
+                                    <li><button className="dropdown-item" onClick={this.setPlaceholderForSearch}>Search by passport</button></li>
+                                    <li><button className="dropdown-item" onClick={this.setPlaceholderForSearch}>Search by firstname</button></li>
+                                    <li><button className="dropdown-item" onClick={this.setPlaceholderForSearch}>Search by lastname</button></li>
+                                </ul>
+                            </div>
+
+                            <input type="text" className="form-control" placeholder="Passport" style={{
+                                borderRadius: 0
+                            }}></input>
+                            <button className="btn btn-secondary" onClick={this.search} style={{
+                                borderTopLeftRadius: 0,
+                                borderBottomLeftRadius: 0
+                            }}><i className="bi bi-search"></i></button>
+                        </div>
+                    </div>
+                    <br />
+                    <br />
+                    <table className="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Firstname</th>
+                                <th scope="col">Lastname</th>
+                                <th scope="col">Passport</th>
+                                <th scope="col">Nationality</th>
+                                <th scope="col">Birtday</th>
+                                <th scope="col">Gender</th>
+                                <th scope="col">Tickets</th>
+                                <th scope="col" style={{ width: "99px" }}>Controls</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -198,13 +258,148 @@ class Passengers extends React.Component {
         );
     }
 
+    search() {
+        let input = document.querySelector('#passengers-found-table .form-control');
+        let searchType = input.placeholder;
+        let searchValue = input.value;
+
+        switch (searchType) {
+            case 'Passport': {
+                if (this.validateInput(input, (searchValue) => {
+                    let re = /^[a-z]{2}\d{6}$/;
+                    return re.test(searchValue);
+                }, 'Passport must be in this format: ab123456')) { return; }
+
+                fetch(this.apiUrl + `search/byPassport/${searchValue}`, {
+                    method: "GET"
+                })
+                    .then(res => res)
+                    .then(
+                        (result) => {
+                            input.classList.remove('is-valid');
+                            input.value = '';
+
+                            switch (result.status) {
+                                case 200: {
+                                    return result.json();
+                                }
+                                case 404: break;
+                                case 500: break;
+                            }
+                        },
+                        (error) => {
+                            this.showError("Cannot search, reason: network error. Try to reload this page");
+                        })
+                    .then((result) => {
+                        console.log(result)
+                        let tbody = document.querySelector('#passengers-found-table tbody');
+                        this.addNewPassenger(result, tbody);
+                    });
+
+                break;
+            }
+            case 'Firstname': {
+                if (this.validateInput(input)) { return; }
+        
+                fetch(this.apiUrl + `search/byFirstname/${searchValue}`, {
+                    method: "GET"
+                })
+                    .then(res => res)
+                    .then(
+                        (result) => {
+                            switch (result.status) {
+                                case 200: break;
+                                case 404: break;
+                                case 500: break;
+                            }
+                        },
+                        (error) => {
+                            this.showError("Cannot search, reason: network error. Try to reload this page");
+                        });
+
+                break;
+            }
+            case 'Lastname': {
+                if (this.validateInput(input)) { return; }
+
+                fetch(this.apiUrl + `search/byLastname/${searchValue}`, {
+                    method: "GET"
+                })
+                    .then(res => res)
+                    .then(
+                        (result) => {
+                            switch (result.status) {
+                                case 200: break;
+                                case 404: break;
+                                case 500: break;
+                            }
+                        },
+                        (error) => {
+                            this.showError("Cannot search, reason: network error. Try to reload this page");
+                        });
+
+                break;
+            }
+            default: break;
+        }
+    }
+
+    setPlaceholderForSearch(e) {
+        let item = e.target;
+
+        let itemText = item.innerText;
+        let placeholder = itemText.split(' ')[2].capitalize();
+
+        let input = document.querySelector('#passengers-found-table .form-control');
+        let dropdownToggle = document.querySelector('#passengers-found-table .dropdown-toggle');
+
+        dropdownToggle.innerText = itemText;
+        input.placeholder = placeholder;
+    }
+
+    openSearch() {
+        let containers = document.querySelectorAll('.container');
+
+        let passengersContainer = containers[0];
+        let ticketsContainer = containers[1];
+        let searchContainer = containers[2];
+
+        passengersContainer.style.display = 'none';
+        ticketsContainer.style.display = 'none';
+        searchContainer.style.display = '';
+
+        this.isInvokedBySearch = true;
+    }
+
+    closeSearch() {
+        let containers = document.querySelectorAll('.container');
+
+        let passengersContainer = containers[0];
+        let ticketsContainer = containers[1];
+        let searchContainer = containers[2];
+
+        passengersContainer.style.display = '';
+        ticketsContainer.style.display = 'none';
+        searchContainer.style.display = 'none';
+
+        this.isInvokedBySearch = false;
+    }
+
     closeTickets(e) {
         let containers = document.querySelectorAll('.container');
 
         let passengersContainer = containers[0];
         let ticketsContainer = containers[1];
-
-        passengersContainer.style.display = '';
+        let searchContainer = containers[2];
+        
+        if (this.isInvokedBySearch) {
+            passengersContainer.style.display = 'none';
+            searchContainer.style.display = '';
+        } else {
+            passengersContainer.style.display = '';
+            searchContainer.style.display = 'none';
+        }
+        
         ticketsContainer.style.display = 'none';
 
         let tbody = document.querySelector('#tickets-table tbody');
@@ -220,8 +415,10 @@ class Passengers extends React.Component {
 
         let passengersContainer = containers[0];
         let ticketsContainer = containers[1];
+        let searchContainer = containers[2];
 
         passengersContainer.style.display = 'none';
+        searchContainer.style.display = 'none';
         ticketsContainer.style.display = '';
         loadingElement.style.display = '';
 
@@ -238,6 +435,10 @@ class Passengers extends React.Component {
                 ticketsContainer.style.display = 'none';
                 this.showError("Cannot get tickets, reason: network error. Try to reload this page");
             });
+    }
+
+    setCurrentPassengerId(e) {
+        this.currentPassengerId = e.target.closest('td').getAttribute('passenger-id');
     }
 
     addNewTicket(ticket, passengerId) {
@@ -301,8 +502,10 @@ class Passengers extends React.Component {
         tbody.appendChild(tr);
     }
 
-    addNewPassenger(passenger) {
-        let tbody = document.querySelector('tbody');
+    addNewPassenger(passenger, tbody = null) {
+        if (tbody == null) {
+            tbody = document.querySelector('tbody');
+        }
 
         let tr = document.createElement('tr');
 
@@ -376,13 +579,14 @@ class Passengers extends React.Component {
 
         seeButton.style.marginLeft = '10px';
         addButton.style.marginLeft = '5px';
-        
+
         seeButton.style.cursor = 'pointer';
         addButton.style.cursor = 'pointer';
 
         buttonEdit.addEventListener('click', this.addDataToEditModal);
         buttonDelete.addEventListener('click', this.deleteRow);
         seeButton.addEventListener('click', this.showTickets);
+        addButton.addEventListener('click', this.setCurrentPassengerId);
 
         tdControls.appendChild(buttonEdit);
         tdControls.appendChild(buttonDelete);
@@ -413,7 +617,7 @@ class Passengers extends React.Component {
         loadingElement.style.display = 'none';
 
         this.passengers.map(p => {
-            this.addNewPassenger(p);            
+            this.addNewPassenger(p);
         });
     }
 
@@ -510,22 +714,18 @@ class Passengers extends React.Component {
         let lastname = tr.children[2].innerText;
         let passport = tr.children[3].innerText;
         let nationality = tr.children[4].innerText;
-        let ticketType = tr.children[7].innerText;
-        let ticketId = tr.children[7].getAttribute('ticket-id');
 
         let idInput = document.querySelector('#editPassengerModal #id-input');
         let firstnameInput = document.querySelector('#editPassengerModal #firstname-input');
         let lastnameInput = document.querySelector('#editPassengerModal #lastname-input');
         let passportInput = document.querySelector('#editPassengerModal #passport-input');
         let nationalityInput = document.querySelector('#editPassengerModal #nationality-input');
-        let ticketIdInput = document.querySelector('#editPassengerModal #ticket-input');
 
         idInput.value = id;
         firstnameInput.value = firstname;
         lastnameInput.value = lastname;
         passportInput.value = passport;
         nationalityInput.value = nationality;
-        ticketIdInput.setAttribute('passenger-id', id);
     }
 
     saveDataFromModal(modalId) {
@@ -647,7 +847,7 @@ class Passengers extends React.Component {
                             let tdId = tds[0];
                             let tdFirstname = tds[1];
                             let tdLastname = tds[2];
-                            let tdPassport = [3];
+                            let tdPassport = tds[3];
                             let tdNationality = tds[4];
 
                             tdId.innerText = id;
@@ -785,28 +985,29 @@ class Passengers extends React.Component {
                     }
                 },
                 (error) => {
-                    tr.style.display = '';
+                    //tr.style.display = '';
                     this.showError("Cannot delete row, reason: network error. Try to reload this page");
                 })
-                .then(tickets => {
-                    let passengerId = this.currentPassengerId;
-
-                    tickets.forEach(t => {
-                        this.invokedByAddTickets = true;
-                        this.addNewTicket(t, passengerId);
-                    });
-
-                    let containers = document.querySelectorAll('.container');
-                    
-                    let passengersContainer = containers[0];
-                    let ticketsContainer = containers[1];
-
-                    passengersContainer.style.display = 'none';
-                    ticketsContainer.style.display = '';
-
-                    modal.hide();
-                    this.ticketModalCloseHandler();
+            .then(tickets => {
+                let passengerId = this.currentPassengerId;
+                tickets.forEach(t => {
+                    this.invokedByAddTickets = true;
+                    this.addNewTicket(t, passengerId);
                 });
+
+                let containers = document.querySelectorAll('.container');
+
+                let passengersContainer = containers[0];
+                let ticketsContainer = containers[1];
+                let searchContainer = containers[2];
+
+                passengersContainer.style.display = 'none';
+                searchContainer.style.display = 'none';
+                ticketsContainer.style.display = '';
+
+                modal.hide();
+                this.ticketModalCloseHandler();
+            });
     }
 
     addNewModalCloseHandler(e) {
@@ -883,7 +1084,7 @@ class Passengers extends React.Component {
         let tr = button.closest('tr');
         let ticketId = tr.getAttribute('ticket-id');
         let passengerId = tr.getAttribute('passenger-id');
-        
+
         button.classList.add('disabled');
 
         fetch(this.apiUrl + `ticket/?passengerId=${passengerId}&ticketId=${ticketId}`, {
@@ -898,7 +1099,7 @@ class Passengers extends React.Component {
                 (result) => {
                     switch (result.status) {
                         case 200: {
-                            tr.remove(); 
+                            tr.remove();
                             return result.json();
                         }
                         case 404: {
@@ -959,7 +1160,7 @@ class Passengers extends React.Component {
         let tr = e.target.closest("tr");
         let id = tr.children[0].innerText;
 
-        if (!confirm('This operation cannot be undone')) {
+        if (!window.confirm('This operation cannot be undone')) {
             return;
         }
 
@@ -1022,5 +1223,12 @@ class Passengers extends React.Component {
         nationalityInput.value = '';
     }
 }
+
+Object.defineProperty(String.prototype, 'capitalize', {
+    value: function () {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    },
+    enumerable: false
+});
 
 export default Passengers;
