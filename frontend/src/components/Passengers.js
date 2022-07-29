@@ -127,7 +127,7 @@ class Passengers extends React.Component {
                                 </ul>
                             </div>
 
-                            <input type="text" className="form-control" placeholder="Passport" style={{
+                            <input type="text" className="form-control" placeholder="Passport" onChange={this.validateInputOnChange} style={{
                                 borderRadius: 0
                             }}></input>
                             <button className="btn btn-secondary" onClick={this.search} style={{
@@ -383,29 +383,21 @@ class Passengers extends React.Component {
     openSearch() {
         let containers = document.querySelectorAll('.container');
 
-        let passengersContainer = containers[0];
-        let ticketsContainer = containers[1];
-        let searchContainer = containers[2];
+        let flightsContainer = containers[0];
+        let searchContainer = containers[1];
 
-        passengersContainer.style.display = 'none';
-        ticketsContainer.style.display = 'none';
+        flightsContainer.style.display = 'none';
         searchContainer.style.display = '';
-
-        this.isInvokedBySearch = true;
     }
 
     closeSearch() {
         let containers = document.querySelectorAll('.container');
 
-        let passengersContainer = containers[0];
-        let ticketsContainer = containers[1];
-        let searchContainer = containers[2];
+        let flightsContainer = containers[0];
+        let searchContainer = containers[1];
 
-        passengersContainer.style.display = '';
-        ticketsContainer.style.display = 'none';
+        flightsContainer.style.display = '';
         searchContainer.style.display = 'none';
-
-        this.isInvokedBySearch = false;
 
         let tbody = searchContainer.querySelector('tbody');
         tbody.innerText = '';
