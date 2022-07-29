@@ -9,6 +9,10 @@ class Flights extends React.Component {
 
         this.apiUrl = 'http://api.airportproject.com/flight/';
 
+        this.search = this.search.bind(this);
+        this.openSearch = this.openSearch.bind(this);
+        this.closeSearch = this.closeSearch.bind(this);
+
         this.validateInput = this.validateInput.bind(this);
         this.validateInputOnChange = this.validateInputOnChange.bind(this);
 
@@ -51,7 +55,62 @@ class Flights extends React.Component {
                 <br />
 
                 <div className="container">
-                    <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNewFlightModal">Add new flight</button>
+                    <div className="d-flex justify-content-between">
+                        <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNewFlightModal">Add new flight</button>
+                        <button type="button" className="btn btn-dark" onClick={this.openSearch}>Search</button>
+                    </div>
+                    
+                    <br />
+                    <br />
+                    <table className="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">From</th>
+                                <th scope="col">To</th>
+                                <th scope="col">Terminal</th>
+                                <th scope="col">Departure time</th>
+                                <th scope="col">Arrival time</th>
+                                <th scope="col">Economy</th>
+                                <th scope="col">Business</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" style={{ width: "99px" }}>Controls</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div className="container" id="flights-found-table" style={{
+                    display: 'none'
+                }}>
+                    <div className="d-flex justify-content-between">
+                        <button type="button" className="btn btn-danger" onClick={this.closeSearch}>Close search</button>
+
+                        <div className="btn-group">
+                            <div className="dropdown">
+                                <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style={{
+                                    borderTopRightRadius: 0,
+                                    borderBottomRightRadius: 0
+                                }}>
+                                    Search by flight number
+                                </button>
+                                <ul className="dropdown-menu">
+                                    <li><button className="dropdown-item" onClick={this.setPlaceholderForSearch}>Search by flight number</button></li>
+                                    <li><button className="dropdown-item" onClick={this.setPlaceholderForSearch}>Search by arrival airport</button></li>
+                                    <li><button className="dropdown-item" onClick={this.setPlaceholderForSearch}>Search by departure airport</button></li>
+                                </ul>
+                            </div>
+
+                            <input type="text" className="form-control" placeholder="Flight number" onChange={this.validateInputOnChange} style={{
+                                borderRadius: 0
+                            }}></input>
+                            <button className="btn btn-secondary" onClick={this.search} style={{
+                                borderTopLeftRadius: 0,
+                                borderBottomLeftRadius: 0
+                            }}><i className="bi bi-search"></i></button>
+                        </div>
+                    </div>
                     <br />
                     <br />
                     <table className="table table-striped">
@@ -179,8 +238,154 @@ class Flights extends React.Component {
         );
     }
 
-    addNewFlight(flight) {
-        let tbody = document.querySelector('tbody');
+    search() {
+        let input = document.querySelector('#flights-found-table .form-control');
+        let tbody = document.querySelector('#flights-found-table tbody');
+
+        let searchType = input.placeholder;
+        let searchValue = input.value;
+        
+        tbody.innerText = '';
+
+        switch (searchType) {
+            case 'Flight number': {
+                if (this.validateInput(input, (flightNumber) => {
+                    return flightNumber > 0;
+                }, 'Flight number must be not less or equal to zero')) { return; }
+
+                fetch(this.apiUrl + `search/byFlightId/${searchValue}`, {
+                    method: "GET"
+                })
+                    .then(res => res)
+                    .then(
+                        (result) => {
+                            switch (result.status) {
+                                case 200: return result.json();
+                                case 404: this.showError(`Cannot find flight with number: ${searchValue}`); break;
+                                case 500: this.showError('Server error, please, contact administrator'); break;
+                            }
+                        },
+                        (error) => {
+                            this.showError("Cannot search, reason: network error. Try to reload this page");
+                        })
+                    .then((result) => {
+                        if (result) {
+                            this.addNewFlight(result, tbody);
+                        }
+                    });
+
+                break;
+            }
+            case 'Arrival airport': {
+                if (this.validateInput(input, (arrivalAirport) => {
+                    return arrivalAirport.length <= 50;
+                }, "Arrival airport length must be not grater than 50")) { return; }
+        
+                fetch(this.apiUrl + `search/byFlightArrivalAirport/${searchValue}`, {
+                    method: "GET"
+                })
+                    .then(res => res)
+                    .then(
+                        (result) => {
+                            switch (result.status) {
+                                case 200: return result.json();
+                                case 500: this.showError('Server error, please, contact administrator'); break;
+                            }
+                        },
+                        (error) => {
+                            this.showError("Cannot search, reason: network error. Try to reload this page");
+                        })
+                    .then(result => {
+                        if (result.length == 0) {
+                            this.showError(`Cannot find flight with arrival airport: ${searchValue}`);
+                        }
+
+                        result.map(f => {
+                            this.addNewFlight(f, tbody);
+                        });
+                    });
+
+                break;
+            }
+            case 'Departure airport': {
+                if (this.validateInput(input, (departureAirport) => {
+                    return departureAirport.length <= 50;
+                }, "Departure airport length must be not grater than 50")) { return; }
+
+                fetch(this.apiUrl + `search/byFlightDepartureAirport/${searchValue}`, {
+                    method: "GET"
+                })
+                    .then(res => res)
+                    .then(
+                        (result) => {
+                            switch (result.status) {
+                                case 200: return result.json();
+                                case 500: this.showError('Server error, please, contact administrator'); break;
+                            }
+                        },
+                        (error) => {
+                            this.showError("Cannot search, reason: network error. Try to reload this page");
+                        })
+                    .then((result) => {
+                        if (result.length == 0) {
+                            this.showError(`Cannot find flight with departure airport: ${searchValue}`);
+                        }
+
+                        result.map(f => {
+                            this.addNewFlight(f, tbody);
+                        });
+                    });
+
+                break;
+            }
+            default: break;
+        }
+
+        input.classList.remove('is-valid');
+        input.classList.remove('is-invalid');
+        input.value = '';
+    }
+
+    setPlaceholderForSearch(e) {
+        let item = e.target;
+
+        let itemText = item.innerText;
+        let placeholder = itemText.split(' ').slice(2, 4).join(' ').capitalize();
+
+        let input = document.querySelector('#flights-found-table .form-control');
+        let dropdownToggle = document.querySelector('#flights-found-table .dropdown-toggle');
+
+        dropdownToggle.innerText = itemText;
+        input.placeholder = placeholder;
+    }
+
+    openSearch() {
+        let containers = document.querySelectorAll('.container');
+
+        let passengersContainer = containers[0];
+        let searchContainer = containers[1];
+
+        passengersContainer.style.display = 'none';
+        searchContainer.style.display = '';
+    }
+
+    closeSearch() {
+        let containers = document.querySelectorAll('.container');
+
+        let passengersContainer = containers[0];
+        let searchContainer = containers[1];
+
+        passengersContainer.style.display = '';
+        searchContainer.style.display = 'none';
+
+        let tbody = searchContainer.querySelector('tbody');
+        tbody.innerText = '';
+    }
+
+    addNewFlight(flight, tbody = null) {
+        if (tbody == null) {
+            tbody = document.querySelector('tbody');
+        }
 
         let tr = document.createElement('tr');
 
@@ -559,18 +764,6 @@ class Flights extends React.Component {
         if (error) {
             return;
         }
-        
-        console.log(JSON.stringify({
-            id,
-            arrivalAirportName: arrivalAirport,
-            departureAirportName: departureAirport,
-            terminal,
-            arrivalTime: this.arrivalTimeChanged ? arrivalTime : this.convertDateToISO(arrivalTime), //FIXME: internationalization bug
-            departureTime: this.departureTimeChanged ? departureTime : this.convertDateToISO(departureTime),
-            economyPrice,
-            businessPrice,
-            status
-        }))
 
         fetch(this.apiUrl, {
             method: "PUT",
