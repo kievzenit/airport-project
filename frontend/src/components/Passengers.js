@@ -260,14 +260,18 @@ class Passengers extends React.Component {
 
     search() {
         let input = document.querySelector('#passengers-found-table .form-control');
+        let tbody = document.querySelector('#passengers-found-table tbody');
+
         let searchType = input.placeholder;
         let searchValue = input.value;
+        
+        tbody.innerText = '';
 
         switch (searchType) {
             case 'Passport': {
-                if (this.validateInput(input, (searchValue) => {
+                if (this.validateInput(input, (passport) => {
                     let re = /^[a-z]{2}\d{6}$/;
-                    return re.test(searchValue);
+                    return re.test(passport);
                 }, 'Passport must be in this format: ab123456')) { return; }
 
                 fetch(this.apiUrl + `search/byPassport/${searchValue}`, {
@@ -276,51 +280,58 @@ class Passengers extends React.Component {
                     .then(res => res)
                     .then(
                         (result) => {
-                            input.classList.remove('is-valid');
-                            input.value = '';
-
                             switch (result.status) {
                                 case 200: {
                                     return result.json();
                                 }
-                                case 404: break;
-                                case 500: break;
+                                case 404: this.showError(`Cannot find passenger with passport: ${searchValue}`); break;
+                                case 500: this.showError('Server error, please, contact administrator'); break;
                             }
                         },
                         (error) => {
                             this.showError("Cannot search, reason: network error. Try to reload this page");
                         })
                     .then((result) => {
-                        console.log(result)
-                        let tbody = document.querySelector('#passengers-found-table tbody');
                         this.addNewPassenger(result, tbody);
                     });
 
                 break;
             }
             case 'Firstname': {
-                if (this.validateInput(input)) { return; }
+                if (this.validateInput(input, (firstname) => {
+                    return firstname.length <= 50;
+                }, "Firstname length must be not grater than 50")) { return; }
         
-                fetch(this.apiUrl + `search/byFirstname/${searchValue}`, {
+                fetch(this.apiUrl + `search/byFirtsname/${searchValue}`, {
                     method: "GET"
                 })
                     .then(res => res)
                     .then(
                         (result) => {
                             switch (result.status) {
-                                case 200: break;
-                                case 404: break;
-                                case 500: break;
+                                case 200: return result.json();
+                                case 500: this.showError('Server error, please, contact administrator'); break;
                             }
                         },
                         (error) => {
                             this.showError("Cannot search, reason: network error. Try to reload this page");
+                        })
+                    .then(result => {
+                        if (result.length == 0) {
+                            this.showError(`Cannot find passengers with firstname: ${searchValue}`);
+                        }
+
+                        result.map(p => {
+                            this.addNewPassenger(p, tbody);
                         });
+                    });
 
                 break;
             }
             case 'Lastname': {
-                if (this.validateInput(input)) { return; }
+                if (this.validateInput(input, (lastname) => {
+                    return lastname.length <= 50;
+                }, "Lastname length must be not grater than 50")) { return; }
 
                 fetch(this.apiUrl + `search/byLastname/${searchValue}`, {
                     method: "GET"
@@ -329,19 +340,31 @@ class Passengers extends React.Component {
                     .then(
                         (result) => {
                             switch (result.status) {
-                                case 200: break;
-                                case 404: break;
-                                case 500: break;
+                                case 200: return result.json();
+                                case 500: this.showError('Server error, please, contact administrator'); break;
                             }
                         },
                         (error) => {
                             this.showError("Cannot search, reason: network error. Try to reload this page");
+                        })
+                    .then((result) => {
+                        if (result.length == 0) {
+                            this.showError(`Cannot find passengers with lastname: ${searchValue}`);
+                        }
+
+                        result.map(p => {
+                            this.addNewPassenger(p, tbody);
                         });
+                    });
 
                 break;
             }
             default: break;
         }
+
+        input.classList.remove('is-valid');
+        input.classList.remove('is-invalid');
+        input.value = '';
     }
 
     setPlaceholderForSearch(e) {
@@ -383,6 +406,9 @@ class Passengers extends React.Component {
         searchContainer.style.display = 'none';
 
         this.isInvokedBySearch = false;
+
+        let tbody = searchContainer.querySelector('tbody');
+        tbody.innerText = '';
     }
 
     closeTickets(e) {
