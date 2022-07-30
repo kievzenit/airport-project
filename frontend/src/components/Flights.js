@@ -915,11 +915,20 @@ class Flights extends React.Component {
     deleteRow(e) {
         let tr = e.target.closest("tr");
         let id = tr.children[0].innerText;
+        let tr2;
+
+        if (this.isInvokedBySearch) {
+            tr2 = document.getElementById(`flight-${id}`);
+        }
 
         if (!window.confirm('This operation cannot be undone')) {
             return;
         }
 
+        if (this.isInvokedBySearch) {
+            tr2.style.display = 'none';
+        }
+        
         tr.style.display = 'none';
 
         fetch(this.apiUrl, {
@@ -933,20 +942,43 @@ class Flights extends React.Component {
             .then(
                 (result) => {
                     switch (result.status) {
-                        case 200: tr.remove(); break;
+                        case 200: {
+                            tr.remove(); 
+                            
+                            if (this.isInvokedBySearch) {
+                                tr2.remove();
+                            }
+
+                            break;
+                        }
                         case 404: {
                             tr.style.display = '';
+
+                            if (this.isInvokedBySearch) {
+                                tr2.style.display = '';
+                            }
+
                             this.showError(`Flight with id: ${id} cannot be found`);
                             break;
                         }
                         case 500: {
                             tr.style.display = '';
+
+                            if (this.isInvokedBySearch) {
+                                tr2.style.display = '';
+                            }
+
                             this.showError("Server error, try again"); 
                             break;}
                     }
                 },
                 (error) => {
                     tr.style.display = '';
+
+                    if (this.isInvokedBySearch) {
+                        tr2.style.display = '';
+                    }
+
                     this.showError("Cannot delete row, reason: network error. Try to reload this page");
                 });
     }
