@@ -6,11 +6,12 @@ namespace AirportProject.Domain.DTOs
         where TItems : DTO
     {
         public ICollection<TItems> Items { get; private set; }
-        public int TotalCount { get => this.Items.Count; }
+        public int TotalCount { get; private set; }
 
-        public PageResultDTO(ICollection<TItems> items)
+        public PageResultDTO(ICollection<TItems> items, int totalCount)
         {
             this.Items = items;
+            this.TotalCount = totalCount;
         }
     }
 }
