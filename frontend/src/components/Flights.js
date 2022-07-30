@@ -32,6 +32,10 @@ class Flights extends React.Component {
 
         this.deleteRow = this.deleteRow.bind(this);
 
+        this.setFlightByTDs = this.setFlightByTDs.bind(this);
+
+        this.isInvokedBySearch = false;
+
         this.flights = [];
     }
 
@@ -367,6 +371,8 @@ class Flights extends React.Component {
 
         passengersContainer.style.display = 'none';
         searchContainer.style.display = '';
+
+        this.isInvokedBySearch = true;
     }
 
     closeSearch() {
@@ -380,6 +386,8 @@ class Flights extends React.Component {
 
         let tbody = searchContainer.querySelector('tbody');
         tbody.innerText = '';
+
+        this.isInvokedBySearch = false;
     }
 
     addNewFlight(flight, tbody = null) {
@@ -790,25 +798,14 @@ class Flights extends React.Component {
                             let tr = document.getElementById(`flight-${id}`);
                             let tds = tr.children;
 
-                            let tdId = tds[0];
-                            let tdDepartureAirport = tds[1];
-                            let tdArrivalAirport = tds[2];
-                            let tdTerminal = tds[3];
-                            let tdDepartureTime = tds[4];
-                            let tdArrivalTime = tds[5];
-                            let tdEconomyPrice = tds[6];
-                            let tdBusinessPrice = tds[7];
-                            let tdStatus = tds[8];
+                            this.setFlightByTDs(tds, id, departureAirport, arrivalAirport, terminal, departureTime, arrivalTime, economyPrice, businessPrice, status);
 
-                            tdId.innerText = id;
-                            tdDepartureAirport.innerText = departureAirport;
-                            tdArrivalAirport.innerText = arrivalAirport;
-                            tdTerminal.innerText = terminal;
-                            tdDepartureTime.innerText = this.departureTimeChanged ? this.convertISOToDate(departureTime) : departureTime;
-                            tdArrivalTime.innerText = this.arrivalTimeChanged ? this.convertISOToDate(arrivalTime) : arrivalTime;
-                            tdEconomyPrice.innerText = economyPrice + '$';
-                            tdBusinessPrice.innerText = businessPrice + '$';
-                            tdStatus.innerText = status;
+                            if (this.isInvokedBySearch) {
+                                tr = document.querySelectorAll(`#flight-${id}`)[1];
+                                tds = tr.children;
+
+                                this.setFlightByTDs(tds, id, departureAirport, arrivalAirport, terminal, departureTime, arrivalTime, economyPrice, businessPrice, status);
+                            }
 
                             break;
                         }
@@ -870,6 +867,28 @@ class Flights extends React.Component {
                 tdId.innerText = result.id;
 
             });
+    }
+
+    setFlightByTDs(tds, id, departureAirport, arrivalAirport, terminal, departureTime, arrivalTime, economyPrice, businessPrice, status) {
+        let tdId = tds[0];
+        let tdDepartureAirport = tds[1];
+        let tdArrivalAirport = tds[2];
+        let tdTerminal = tds[3];
+        let tdDepartureTime = tds[4];
+        let tdArrivalTime = tds[5];
+        let tdEconomyPrice = tds[6];
+        let tdBusinessPrice = tds[7];
+        let tdStatus = tds[8];
+
+        tdId.innerText = id;
+        tdDepartureAirport.innerText = departureAirport;
+        tdArrivalAirport.innerText = arrivalAirport;
+        tdTerminal.innerText = terminal;
+        tdDepartureTime.innerText = this.departureTimeChanged ? this.convertISOToDate(departureTime) : departureTime;
+        tdArrivalTime.innerText = this.arrivalTimeChanged ? this.convertISOToDate(arrivalTime) : arrivalTime;
+        tdEconomyPrice.innerText = economyPrice + '$';
+        tdBusinessPrice.innerText = businessPrice + '$';
+        tdStatus.innerText = status;
     }
 
     editModalCloseHandler(e) {
