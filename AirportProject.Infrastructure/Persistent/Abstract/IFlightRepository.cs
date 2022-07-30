@@ -15,5 +15,7 @@ namespace AirportProject.Infrastructure.Persistent.Abstract
         public Task<FlightDTO> SearchByFlightNumber(int id);
         public Task<ICollection<FlightDTO>> SearchByFlightArrivalAirport(string airportName);
         public Task<ICollection<FlightDTO>> SearchByFlightDepartureAirport(string airportName);
+
+        public Task<int> GetTotalCount();
     }
 }

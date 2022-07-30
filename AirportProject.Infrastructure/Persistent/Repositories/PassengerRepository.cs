@@ -151,5 +151,12 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
 
             return passengerDTOs;
         }
+
+        public async Task<int> GetTotalCount()
+        {
+            var passengers = await this.context.Passengers.ToListAsync();
+
+            return passengers.Count;
+        }
     }
 }

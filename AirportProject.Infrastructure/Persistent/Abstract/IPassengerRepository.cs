@@ -18,5 +18,7 @@ namespace AirportProject.Infrastructure.Persistent.Abstract
 
         public Task<bool> AddTicket(int passengerId, int ticketId);
         public Task<bool> DeleteTicket(int passengerId, int ticketId);
+
+        public Task<int> GetTotalCount();
     }
 }

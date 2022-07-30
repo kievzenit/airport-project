@@ -103,5 +103,12 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
 
             return true;
         }
+
+        public async Task<int> GetTotalCount()
+        {
+            var airports = await this.context.Airports.ToListAsync();
+
+            return airports.Count;
+        }
     }
 }

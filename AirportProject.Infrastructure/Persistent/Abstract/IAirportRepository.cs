@@ -11,5 +11,7 @@ namespace AirportProject.Infrastructure.Persistent.Abstract
         public Task<ICollection<AirportDTO>> GetRange(int offset, int count);
         public Task<bool> Update(AirportDTO airportDTO);
         public Task<bool> Delete(int id);
+
+        public Task<int> GetTotalCount();
     }
 }
