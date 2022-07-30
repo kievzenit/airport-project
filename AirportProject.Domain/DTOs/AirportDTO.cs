@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AirportProject.Domain.DTOs
 {
-    public class AirportDTO
+    public class AirportDTO : DTO
     {
         [Key]
         [Required]

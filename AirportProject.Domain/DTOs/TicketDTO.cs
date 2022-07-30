@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AirportProject.Domain.DTOs
 {
-    public class TicketDTO
+    public class TicketDTO : DTO
     {
         [Column("from")]
         [Required]
