@@ -48,14 +48,14 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<PassengerDTO>> GetAll()
+        public async Task<ICollection<PassengerDTO>> GetAll()
         {
             var passengers = await this.context.Passengers.ToListAsync();
 
             return await passengers.ToPassengerDTOs();
         }
 
-        public async Task<IEnumerable<PassengerDTO>> GetRange(int offset, int count)
+        public async Task<ICollection<PassengerDTO>> GetRange(int offset, int count)
         {
             var passengers = await this.context.Passengers
                 .Skip((offset - 1) * count)
@@ -130,7 +130,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return passengerDTO;
         }
 
-        public async Task<IEnumerable<PassengerDTO>> SearchByFirstname(string firstname)
+        public async Task<ICollection<PassengerDTO>> SearchByFirstname(string firstname)
         {
             var passengers = await this.context.Passengers
                 .Where(p => p.Firstname == firstname)
@@ -141,7 +141,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return passengerDTOs;
         }
 
-        public async Task<IEnumerable<PassengerDTO>> SearchByLastname(string lastname)
+        public async Task<ICollection<PassengerDTO>> SearchByLastname(string lastname)
         {
             var passengers = await this.context.Passengers
                 .Where(p => p.Lastname == lastname)

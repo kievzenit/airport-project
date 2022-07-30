@@ -71,7 +71,7 @@ namespace AirportProject.Infrastructure.Persistent.Casting
             };
         }
 
-        public static async Task<IEnumerable<FlightDTO>> ToFlightDTOs(this IEnumerable<Flight> flights, AirportProjectDBContext context)
+        public static async Task<List<FlightDTO>> ToFlightDTOs(this IEnumerable<Flight> flights, AirportProjectDBContext context)
         {
             var flightDTOs = new List<FlightDTO>();
 

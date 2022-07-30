@@ -6,7 +6,7 @@ namespace AirportProject.Infrastructure.Persistent.Abstract
 {
     public interface ITicketRepository
     {
-        public Task<IEnumerable<TicketDTO>> GetTickets(TicketDTO ticketDTO);
-        public Task<IEnumerable<TicketDTO>> GetTickets(int passengerId);
+        public Task<ICollection<TicketDTO>> GetTickets(TicketDTO ticketDTO);
+        public Task<ICollection<TicketDTO>> GetTickets(int passengerId);
     }
 }

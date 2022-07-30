@@ -70,14 +70,14 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<AirportDTO>> GetAll()
+        public async Task<ICollection<AirportDTO>> GetAll()
         {
             var airports = await this.context.Airports.ToListAsync();
 
             return await airports.ToAirportDTOs();
         }
 
-        public async Task<IEnumerable<AirportDTO>> GetRange(int offset, int count)
+        public async Task<ICollection<AirportDTO>> GetRange(int offset, int count)
         {
             var airports = await this.context.Airports
                 .Skip((offset - 1) * count)

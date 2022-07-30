@@ -23,7 +23,7 @@ namespace AirportProject.Infrastructure.Persistent.Casting
                 });
         }
 
-        public static async Task<IEnumerable<TicketDTO>> ToTicktDTOs(this IEnumerable<Ticket> tickets)
+        public static async Task<List<TicketDTO>> ToTicktDTOs(this IEnumerable<Ticket> tickets)
         {
             var ticketDTOs = new List<TicketDTO>();
 

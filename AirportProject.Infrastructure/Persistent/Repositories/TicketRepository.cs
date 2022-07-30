@@ -18,7 +18,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             this.context = context;
         }
 
-        public async Task<IEnumerable<TicketDTO>> GetTickets(TicketDTO ticketDTO)
+        public async Task<ICollection<TicketDTO>> GetTickets(TicketDTO ticketDTO)
         {
             var flights = await this.context.Flights
                 .Where(f => f.ArrivalAirport.Name == ticketDTO.To && f.DepartureAirport.Name == ticketDTO.From)
@@ -38,7 +38,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return await tickets.ToTicktDTOs();
         }
 
-        public async Task<IEnumerable<TicketDTO>> GetTickets(int passengerId)
+        public async Task<ICollection<TicketDTO>> GetTickets(int passengerId)
         {
             var passenger = await this.context.Passengers
                 .FirstOrDefaultAsync(p => p.Id == passengerId);

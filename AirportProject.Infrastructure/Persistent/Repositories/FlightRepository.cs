@@ -80,14 +80,14 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<FlightDTO>> GetAll()
+        public async Task<ICollection<FlightDTO>> GetAll()
         {
             var flights = await this.context.Flights.ToListAsync();
 
             return await flights.ToFlightDTOs(this.context);
         }
 
-        public async Task<IEnumerable<FlightDTO>> GetRange(int offset, int count)
+        public async Task<ICollection<FlightDTO>> GetRange(int offset, int count)
         {
             var flights = await this.context.Flights
                 .Skip((offset - 1) * count)
@@ -145,7 +145,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<FlightDTO>> SearchByFlightArrivalAirport(string airportName)
+        public async Task<ICollection<FlightDTO>> SearchByFlightArrivalAirport(string airportName)
         {
             var flights = await this.context.Flights
                 .Where(f => f.ArrivalAirport.Name == airportName)
@@ -156,7 +156,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return flightDTOs;
         }
 
-        public async Task<IEnumerable<FlightDTO>> SearchByFlightDepartureAirport(string airportName)
+        public async Task<ICollection<FlightDTO>> SearchByFlightDepartureAirport(string airportName)
         {
             var flights = await this.context.Flights
                 .Where(f => f.DepartureAirport.Name == airportName)
