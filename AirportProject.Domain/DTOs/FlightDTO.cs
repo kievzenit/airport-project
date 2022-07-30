@@ -19,7 +19,6 @@ namespace AirportProject.Domain.DTOs
         [Required]
         public string DepartureAirportName { get; set; }
         [Column("terminal")]
-        [StringLength(1)]
         [Required]
         [RegularExpression("[A-Z]")]
         public char Terminal { get; set; }
