@@ -19,16 +19,14 @@ namespace AirportProject.Controllers
             this.repository = repository;
         }
 
-        [HttpGet("all")]
-        public async Task<IEnumerable<FlightDTO>> GetAll()
-        {
-            return await this.repository.GetAll();
-        }
 
         [HttpGet("{page}")]
-        public async Task<IEnumerable<FlightDTO>> GetPage(int page)
+        public async Task<PageResultDTO<FlightDTO>> GetPage(int page)
         {
-            return await this.repository.GetRange(page, PAGESIZE);
+            var flightDTOs = await this.repository.GetRange(page, PAGESIZE);
+            var totalCount = await this.repository.GetTotalCount();
+
+            return new PageResultDTO<FlightDTO>(flightDTOs, totalCount);
         }
 
         [HttpPost]

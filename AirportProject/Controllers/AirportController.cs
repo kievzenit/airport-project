@@ -2,6 +2,7 @@
 using AirportProject.Domain.DTOs.Validation;
 using AirportProject.Infrastructure.Persistent.Abstract;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -19,17 +20,13 @@ namespace AirportProject.Controllers
             this.repository = repository;
         }
 
-
-        [HttpGet("all")]
-        public async Task<IEnumerable<AirportDTO>> Index()
-        {
-            return await repository.GetAll();
-        }
-
         [HttpGet("{page}")]
-        public async Task<IEnumerable<AirportDTO>> Page(int page)
+        public async Task<PageResultDTO<AirportDTO>> Page(int page)
         {
-            return await repository.GetRange(page, PAGESIZE);
+            var airportDTOs = await repository.GetRange(page, PAGESIZE);
+            var totalCount = await repository.GetTotalCount();
+
+            return new PageResultDTO<AirportDTO>(airportDTOs, totalCount);
         }
 
         [HttpPost]
