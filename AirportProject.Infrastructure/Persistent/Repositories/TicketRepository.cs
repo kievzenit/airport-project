@@ -51,7 +51,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return await this.GetTicketDTOs(passenger);
         }
 
-        private async Task<IEnumerable<TicketDTO>> GetTicketDTOs(Passenger passenger)
+        private async Task<ICollection<TicketDTO>> GetTicketDTOs(Passenger passenger)
         {
             var tickets = await this.context.PassengersTickets
                 .Where(pt => pt.Passenger == passenger)
