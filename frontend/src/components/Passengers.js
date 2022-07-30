@@ -281,9 +281,7 @@ class Passengers extends React.Component {
                     .then(
                         (result) => {
                             switch (result.status) {
-                                case 200: {
-                                    return result.json();
-                                }
+                                case 200: return result.json();
                                 case 404: this.showError(`Cannot find passenger with passport: ${searchValue}`); break;
                                 case 500: this.showError('Server error, please, contact administrator'); break;
                             }
@@ -384,23 +382,31 @@ class Passengers extends React.Component {
         let containers = document.querySelectorAll('.container');
 
         let flightsContainer = containers[0];
-        let searchContainer = containers[1];
+        let ticketsContainer = containers[1];
+        let searchContainer = containers[2];
 
         flightsContainer.style.display = 'none';
+        ticketsContainer.style.display = 'none';
         searchContainer.style.display = '';
+
+        this.isInvokedBySearch = true;
     }
 
     closeSearch() {
         let containers = document.querySelectorAll('.container');
 
         let flightsContainer = containers[0];
-        let searchContainer = containers[1];
+        let ticketsContainer = containers[1];
+        let searchContainer = containers[2];
 
         flightsContainer.style.display = '';
+        ticketsContainer.style.display = 'none';
         searchContainer.style.display = 'none';
 
         let tbody = searchContainer.querySelector('tbody');
         tbody.innerText = '';
+
+        this.isInvokedBySearch = false;
     }
 
     closeTickets(e) {
@@ -862,17 +868,14 @@ class Passengers extends React.Component {
                             let tr = document.getElementById(`passenger-${id}`);
                             let tds = tr.children;
 
-                            let tdId = tds[0];
-                            let tdFirstname = tds[1];
-                            let tdLastname = tds[2];
-                            let tdPassport = tds[3];
-                            let tdNationality = tds[4];
+                            this.setPassengerByTDs(tds, id, firstname, lastname, passport, nationality);
 
-                            tdId.innerText = id;
-                            tdFirstname.innerText = firstname;
-                            tdLastname.innerText = lastname;
-                            tdPassport.innerText = passport;
-                            tdNationality.innerText = nationality;
+                            if (this.isInvokedBySearch) {
+                                tr = document.querySelectorAll(`#passenger-${id}`)[1];
+                                tds = tr.children;
+
+                                this.setPassengerByTDs(tds, id, firstname, lastname, passport, nationality);
+                            }
 
                             break;
                         }
@@ -1028,6 +1031,20 @@ class Passengers extends React.Component {
             });
     }
 
+    setPassengerByTDs(tds, id, firstname, lastname, passport, nationality) {
+        let tdId = tds[0];
+        let tdFirstname = tds[1];
+        let tdLastname = tds[2];
+        let tdPassport = tds[3];
+        let tdNationality = tds[4];
+
+        tdId.innerText = id;
+        tdFirstname.innerText = firstname;
+        tdLastname.innerText = lastname;
+        tdPassport.innerText = passport;
+        tdNationality.innerText = nationality;
+    }
+
     addNewModalCloseHandler(e) {
         let modalId = 'addNewPassengerModal';
 
@@ -1177,9 +1194,18 @@ class Passengers extends React.Component {
     deleteRow(e) {
         let tr = e.target.closest("tr");
         let id = tr.children[0].innerText;
+        let tr2;
+
+        if (this.isInvokedBySearch) {
+            tr2 = document.getElementById(`passenger-${id}`);
+        }
 
         if (!window.confirm('This operation cannot be undone')) {
             return;
+        }
+
+        if (this.isInvokedBySearch) {
+            tr2.style.display = 'none';
         }
 
         tr.style.display = 'none';
@@ -1195,14 +1221,32 @@ class Passengers extends React.Component {
             .then(
                 (result) => {
                     switch (result.status) {
-                        case 200: tr.remove(); break;
+                        case 200: {
+                            tr.remove(); 
+                            
+                            if (this.isInvokedBySearch) {
+                                tr2.remove();
+                            }
+
+                            break;
+                        }
                         case 404: {
                             tr.style.display = '';
+
+                            if (this.isInvokedBySearch) {
+                                tr2.style.display = '';
+                            }
+
                             this.showError(`Passenger with id: ${id} cannot be found`);
                             break;
                         }
                         case 500: {
                             tr.style.display = '';
+                            
+                            if (this.isInvokedBySearch) {
+                                tr2.style.display = '';
+                            }
+
                             this.showError("Server error, try again");
                             break;
                         }
@@ -1210,6 +1254,11 @@ class Passengers extends React.Component {
                 },
                 (error) => {
                     tr.style.display = '';
+                    
+                    if (this.isInvokedBySearch) {
+                        tr2.style.display = '';
+                    }
+
                     this.showError("Cannot delete row, reason: network error. Try to reload this page");
                 });
     }
