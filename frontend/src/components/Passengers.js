@@ -932,6 +932,9 @@ class Passengers extends React.Component {
 
                     let tdId = tr.children[0];
                     tdId.innerText = result.id;
+
+                    let tdTickets = tr.children[7];
+                    tdTickets.setAttribute('passenger-id', result.id);
                 });
 
             });
