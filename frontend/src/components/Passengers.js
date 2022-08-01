@@ -1,4 +1,5 @@
 import React from "react";
+import { useParams } from "react-router-dom";
 
 import Header from "./non-independent/Header";
 import Modal from "./non-independent/Modal";
@@ -36,16 +37,44 @@ class Passengers extends React.Component {
         this.isInvokedByEditModal = false;
         this.isInvokedBySearch = false;
 
+        this.pageNumber = 0;
+        this.pagesCount = 1;
+        this.currentPageItems = 0;
+
         this.passengers = [];
     }
 
     componentDidMount() {
-        fetch(this.apiUrl + 'all')
+        this.pageNumber = this.props.params.page == undefined ? '0' : this.props.params.page;
+
+        if (!this.pageNumber.isPositiveInteger()) {
+            fetch(this.apiUrl + 1)
+                .then(res => res.json())
+                .then(
+                    (result) => {
+                        this.pageNumber = 1
+                        this.totalPassengersCount = result.totalCount;
+                        this.passengers = result.items;
+                        this.setPassengers();
+                        this.createPagination();
+                    },
+                    (error) => {
+                        this.showError("Network error, try to reload this page");
+                    });
+
+            
+            
+            return;
+        }
+
+        fetch(this.apiUrl + this.pageNumber)
             .then(res => res.json())
             .then(
                 (result) => {
-                    this.passengers = result;
+                    this.totalPassengersCount = result.totalCount;
+                    this.passengers = result.items;
                     this.setPassengers();
+                    this.createPagination();
                 },
                 (error) => {
                     this.showError("Network error, try to reload this page");
@@ -256,6 +285,103 @@ class Passengers extends React.Component {
 
             </main>
         );
+    }
+
+    createPagination() {
+        if (this.totalPassengersCount <= 6) { return; }
+
+        let pagination = document.querySelector('.pagination');
+        pagination?.remove();
+
+        let container = document.querySelector('.container');
+
+        let nav = document.createElement('nav');
+        let ul = document.createElement('ul');
+
+        ul.classList.add('pagination', 'justify-content-end');
+
+        this.pagesCount = Math.ceil(this.totalPassengersCount / 6);
+
+        let previous = document.createElement('li');
+
+        if (this.pageNumber == 1) {
+            let previousSpan = document.createElement('span');
+
+            previous.classList.add('page-item', 'disabled');
+            previousSpan.classList.add('page-link');
+
+            previousSpan.innerText = 'Previous';
+
+            previous.appendChild(previousSpan);
+        } else {
+            let previousLink = document.createElement('a');
+
+            previous.classList.add('page-item');
+            previousLink.classList.add('page-link');
+
+            previousLink.innerText = 'Previous';
+            previousLink.href = `/passengers/${this.pageNumber - 1}`;
+
+            previous.appendChild(previousLink);
+        }
+
+        nav.appendChild(ul);
+        ul.appendChild(previous);
+
+        for (let i = 1; i <= this.pagesCount; i++) {
+
+            let pageItem = document.createElement('li');
+
+            pageItem.classList.add('page-item');
+
+            if (this.pageNumber == i) {
+                let pageSpan = document.createElement('span');
+                pageSpan.innerText = i;
+
+                pageSpan.classList.add('page-link');
+                pageItem.classList.add('active');
+
+                pageItem.setAttribute('aria-current', 'page');
+
+                pageItem.appendChild(pageSpan);
+            } else {
+                let pageLink = document.createElement('a');
+                pageLink.innerText = i;
+
+                pageLink.classList.add('page-link');
+                pageLink.href = `/passengers/${i}`;
+
+                pageItem.appendChild(pageLink);
+            }
+
+            ul.appendChild(pageItem);
+        }
+
+        let next = document.createElement('li');
+
+        if (this.pageNumber == this.pagesCount) {
+            let nextSpan = document.createElement('span');
+
+            next.classList.add('page-item', 'disabled');
+            nextSpan.classList.add('page-link');
+
+            nextSpan.innerText = 'Next';
+
+            next.appendChild(nextSpan);
+        } else {
+            let nextLink = document.createElement('a');
+
+            next.classList.add('page-item');
+            nextLink.classList.add('page-link');
+
+            nextLink.innerText = 'Next';
+            nextLink.href = `/passengers/${parseInt(this.pageNumber) + 1}`;
+
+            next.appendChild(nextLink);
+        }
+
+        ul.appendChild(next);
+        container.appendChild(nav);
     }
 
     search() {
@@ -529,6 +655,7 @@ class Passengers extends React.Component {
     addNewPassenger(passenger, tbody = null) {
         if (tbody == null) {
             tbody = document.querySelector('tbody');
+            this.currentPageItems += 1;
         }
 
         let tr = document.createElement('tr');
@@ -894,16 +1021,24 @@ class Passengers extends React.Component {
             return;
         }
 
-        this.addNewPassenger({
-            id: undefined,
-            firstname,
-            lastname,
-            passport,
-            nationality,
-            birthday,
-            gender,
-            ticketId
-        });
+        let tr;
+
+        this.totalPassengersCount += 1;
+
+        if (this.currentPageItems == 6) {
+            this.createPagination();
+        } else {
+            tr = this.addNewPassenger({
+                id: undefined,
+                firstname,
+                lastname,
+                passport,
+                nationality,
+                birthday,
+                gender,
+                ticketId
+            });
+        }
 
         fetch(this.apiUrl, {
             method: "POST",
@@ -923,7 +1058,12 @@ class Passengers extends React.Component {
             .then(res => {
                 switch (res.status) {
                     case 200: return res.json();
-                    case 500: this.showError("Server error, try again"); break;
+                    case 500: {
+                        this.showError(`Passenger with passport: ${passport} is already exists!`);
+                        tr.remove();
+                        this.currentPageItems -= 1;
+                        break;
+                    }
                 }
             }, error => this.showError('Cannot add row, reason: network error. Try to reload this page'))
             .then(result => {
@@ -1225,7 +1365,8 @@ class Passengers extends React.Component {
                 (result) => {
                     switch (result.status) {
                         case 200: {
-                            tr.remove(); 
+                            tr.remove();
+                            this.currentPageItems -= 1;
                             
                             if (this.isInvokedBySearch) {
                                 tr2.remove();
@@ -1301,4 +1442,29 @@ Object.defineProperty(String.prototype, 'capitalize', {
     enumerable: false
 });
 
-export default Passengers;
+Object.defineProperty(String.prototype, 'isPositiveInteger', {
+    value: function () {
+        const num = Number(this);
+
+        if (typeof num != 'number') {
+            return false;
+        }
+
+        return num.isPositive();
+    },
+    enumerable: false
+});
+
+Object.defineProperty(Number.prototype, 'isPositive', {
+    value: function () {
+        return this > 0;
+    },
+    enumerable: false
+});
+
+export default (props) => (
+    <Passengers
+        {...props}
+        params={useParams()}
+    />
+);
