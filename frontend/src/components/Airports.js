@@ -1,6 +1,12 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 
+import HTTPRequestManager from "../utils/HttpRequestManager";
+import createPagination from "../utils/non-independent/createPagination";
+import showError from "../utils/non-independent/showError";
+import { validateInput, validateInputOnChange } from "../utils/non-independent/validateInput";
+import clearInputs from "../utils/non-independent/clearInputs";
+
 import Header from "./non-independent/Header";
 import Modal from "./non-independent/Modal";
 
@@ -10,10 +16,9 @@ class Airports extends React.Component {
 
         this.apiUrl = 'http://api.airportproject.com/airport/';
 
-        this.setAirports = this.setAirports.bind(this);
+        this.requestManager = new HTTPRequestManager();
 
-        this.validateInput = this.validateInput.bind(this);
-        this.validateInputOnChange = this.validateInputOnChange.bind(this);
+        this.setAirports = this.setAirports.bind(this);
 
         this.addDataToEditModal = this.addDataToEditModal.bind(this);
         this.saveDataFromModal = this.saveDataFromModal.bind(this);
@@ -38,35 +43,33 @@ class Airports extends React.Component {
         this.pageNumber = this.props.params.page == undefined ? '0' : this.props.params.page;
 
         if (!this.pageNumber.isPositiveInteger()) {
-            fetch(this.apiUrl + 1)
-                .then(res => res.json())
-                .then(
-                    (result) => {
-                        this.pageNumber = 1
-                        this.totalAirportsCount = result.totalCount;
-                        this.airports = result.items;
-                        this.setAirports();
-                        this.createPagination();
-                    },
-                    (error) => {
-                        this.showError("Network error, try to reload this page");
-                    });
-            
+            this.requestManager.GET(this.apiUrl + 1,
+                (response) => {
+                    response = JSON.parse(response);
+
+                    this.pageNumber = 1
+                    this.totalAirportsCount = response.totalCount;
+                    this.airports = response.items;
+                    this.setAirports();
+                    createPagination(this.totalAirportsCount, this.pageNumber, 'airports');
+                },
+                () => showError("Network error, try to reload this page")
+            );
+
             return;
         }
 
-        fetch(this.apiUrl + this.pageNumber)
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.totalAirportsCount = result.totalCount;
-                    this.airports = result.items;
-                    this.setAirports();
-                    this.createPagination();
-                },
-                (error) => {
-                    this.showError("Network error, try to reload this page");
-                });
+        this.requestManager.GET(this.apiUrl + this.pageNumber,
+            (response) => {
+                response = JSON.parse(response);
+                    
+                this.totalAirportsCount = response.totalCount;
+                this.airports = response.items;
+                this.setAirports();
+                createPagination(this.totalAirportsCount, this.pageNumber, 'airports');
+            },
+            () => showError("Network error, try to reload this page")
+        );
     }
 
     render() {
@@ -98,9 +101,9 @@ class Airports extends React.Component {
                 <Modal id="addNewAirportModal" title="Add new airport" body={
                     (
                         <form className="input-group mb-3">
-                            <input type="text" className="form-control" onChange={this.validateInputOnChange} placeholder="Airport name" />
-                            <input type="text" className="form-control" onChange={this.validateInputOnChange} placeholder="Country" />
-                            <input type="text" className="form-control" onChange={this.validateInputOnChange} placeholder="City" />
+                            <input type="text" className="form-control" onChange={validateInputOnChange} placeholder="Airport name" />
+                            <input type="text" className="form-control" onChange={validateInputOnChange} placeholder="Country" />
+                            <input type="text" className="form-control" onChange={validateInputOnChange} placeholder="City" />
                         </form>
                     )
                 } saveOnClick={this.addNewModalHandler} closeOnClick={this.addNewModalCloseHandler} />
@@ -108,9 +111,9 @@ class Airports extends React.Component {
                 <Modal id="editAirportModal" title="Edit airport" body={
                     (
                         <form className="input-group mb-3">
-                            <input type="text" className="form-control" onChange={this.validateInputOnChange} placeholder="Airport name" />
-                            <input type="text" className="form-control" onChange={this.validateInputOnChange} placeholder="Country" />
-                            <input type="text" className="form-control" onChange={this.validateInputOnChange} placeholder="City" />
+                            <input type="text" className="form-control" onChange={validateInputOnChange} placeholder="Airport name" />
+                            <input type="text" className="form-control" onChange={validateInputOnChange} placeholder="Country" />
+                            <input type="text" className="form-control" onChange={validateInputOnChange} placeholder="City" />
                             <input type="hidden" />
                         </form>
                     )
@@ -132,103 +135,6 @@ class Airports extends React.Component {
             </main>
         );
 
-    }
-
-    createPagination() {
-        if (this.totalAirportsCount <= 6) { return; }
-
-        let pagination = document.querySelector('.pagination');
-        pagination?.remove();
-
-        let container = document.querySelector('.container');
-
-        let nav = document.createElement('nav');
-        let ul = document.createElement('ul');
-
-        ul.classList.add('pagination', 'justify-content-end');
-
-        this.pagesCount = Math.ceil(this.totalAirportsCount / 6);
-
-        let previous = document.createElement('li');
-
-        if (this.pageNumber == 1) {
-            let previousSpan = document.createElement('span');
-
-            previous.classList.add('page-item', 'disabled');
-            previousSpan.classList.add('page-link');
-
-            previousSpan.innerText = 'Previous';
-
-            previous.appendChild(previousSpan);
-        } else {
-            let previousLink = document.createElement('a');
-
-            previous.classList.add('page-item');
-            previousLink.classList.add('page-link');
-
-            previousLink.innerText = 'Previous';
-            previousLink.href = `/airports/${this.pageNumber - 1}`;
-
-            previous.appendChild(previousLink);
-        }
-
-        nav.appendChild(ul);
-        ul.appendChild(previous);
-
-        for (let i = 1; i <= this.pagesCount; i++) {
-
-            let pageItem = document.createElement('li');
-
-            pageItem.classList.add('page-item');
-
-            if (this.pageNumber == i) {
-                let pageSpan = document.createElement('span');
-                pageSpan.innerText = i;
-
-                pageSpan.classList.add('page-link');
-                pageItem.classList.add('active');
-
-                pageItem.setAttribute('aria-current', 'page');
-
-                pageItem.appendChild(pageSpan);
-            } else {
-                let pageLink = document.createElement('a');
-                pageLink.innerText = i;
-
-                pageLink.classList.add('page-link');
-                pageLink.href = `/airports/${i}`;
-
-                pageItem.appendChild(pageLink);
-            }
-
-            ul.appendChild(pageItem);
-        }
-
-        let next = document.createElement('li');
-
-        if (this.pageNumber == this.pagesCount) {
-            let nextSpan = document.createElement('span');
-
-            next.classList.add('page-item', 'disabled');
-            nextSpan.classList.add('page-link');
-
-            nextSpan.innerText = 'Next';
-
-            next.appendChild(nextSpan);
-        } else {
-            let nextLink = document.createElement('a');
-
-            next.classList.add('page-item');
-            nextLink.classList.add('page-link');
-
-            nextLink.innerText = 'Next';
-            nextLink.href = `/airports/${parseInt(this.pageNumber) + 1}`;
-
-            next.appendChild(nextLink);
-        }
-
-        ul.appendChild(next);
-        container.appendChild(nav);
     }
 
     addNewAirport(airport) {
@@ -300,8 +206,6 @@ class Airports extends React.Component {
     }
 
     setAirports() {
-        let tbody = document.querySelector('tbody');
-
         if (this.airports.length < 0) {
             return;
         }
@@ -313,71 +217,6 @@ class Airports extends React.Component {
             loadingElement.style.display = 'none';
         });
     }
-
-    showError(message) {
-        let container = document.querySelector('.toast-container');
-
-        let toast = document.createElement('div');
-        let flexContainer = document.createElement('div');
-        let toasBody = document.createElement('div');
-        let closeButton = document.createElement('button');
-
-        toast.classList.add('toast', 'align-items-center', 'fade', 'text-bg-danger', 'show');
-        toast.style.marginBottom = '0.3rem';
-
-        flexContainer.classList.add('d-flex');
-        toasBody.classList.add('toast-body');
-        closeButton.classList.add('btn-close', 'btn-close-white', 'me-2', 'm-auto');
-
-        toasBody.innerText = message;
-
-        flexContainer.appendChild(toasBody);
-        flexContainer.appendChild(closeButton);
-        toast.appendChild(flexContainer);
-        container.appendChild(toast);
-
-        let onCloseClick = () => {
-            toast.remove();
-        }
-
-        closeButton.addEventListener('click', onCloseClick);
-
-        setTimeout(() => onCloseClick(), 10000);
-    }
-
-    validateInputOnChange(e) {
-        this.validateInput(e.target);
-    }
-
-    validateInput(input, validateCallback, validateMessage) {
-        let error = false;
-
-        if (!input.value) {
-            input.classList.remove('is-valid');
-            input.classList.add('is-invalid');
-
-            this.showError(`Field ${input.placeholder.toLowerCase()} must be not empty`)
-
-            error = true;
-        }
-
-        if (!error && validateCallback && !validateCallback(input.value)) {
-            input.classList.remove('is-valid');
-            input.classList.add('is-invalid');
-
-            this.showError(`${validateMessage}`)
-
-            error = true;
-        }
-
-        if (!error) {
-            input.classList.remove('is-invalid');
-            input.classList.add('is-valid');
-        }
-
-        return error;
-    }
-
 
     addDataToEditModal(e) {
         let tr = e.target.closest("tr");
@@ -395,7 +234,7 @@ class Airports extends React.Component {
         let cityInput = editModalInputs[2];
         let idInput = editModalInputs[3];
 
-        this.clearInputs(idInput, nameInput, countryInput, cityInput);
+        clearInputs([idInput, nameInput, countryInput, cityInput]);
 
         idInput.value = id;
         nameInput.value = name;
@@ -419,14 +258,14 @@ class Airports extends React.Component {
             }
         }
 
-        setError(this.validateInput(nameInput));
-        setError(this.validateInput(countryInput));
-        setError(this.validateInput(cityInput));
+        setError(validateInput(nameInput));
+        setError(validateInput(countryInput));
+        setError(validateInput(cityInput));
 
         if (!this.invokedByEdit) {
             this.searchName(nameInput.value, () => {
                 setError(true);
-                this.showError('Airport with this name is already exist');
+                showError('Airport with this name is already exist');
             });    
         }
 
@@ -440,7 +279,7 @@ class Airports extends React.Component {
 
         if (!error) {
             modal.hide();
-            this.clearInputs(idInput, nameInput, countryInput, cityInput);
+            clearInputs([idInput, nameInput, countryInput, cityInput]);
         }
 
         this.invokedByEdit = false;
@@ -454,7 +293,7 @@ class Airports extends React.Component {
         let cityInput = inputs[2];
 
 
-        this.clearInputs(null, nameInput, countryInput, cityInput);
+        clearInputs([nameInput, countryInput, cityInput]);
     }
 
     editModalHandler(e) {
@@ -465,45 +304,38 @@ class Airports extends React.Component {
             return;
         }
 
-        fetch(this.apiUrl, {
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json'
+        this.requestManager.PUT(this.apiUrl,
+            (response, status) => {
+                switch (status) {
+                    case 200: {
+                        let tr = document.getElementById(`airport-${id}`);
+                        let tds = tr.children;
+
+                        let tdId = tds[0];
+                        let tdName = tds[1];
+                        let tdCountry = tds[2];
+                        let tdCity = tds[3];
+
+                        tdId.innerText = id;
+                        tdName.innerText = name;
+                        tdCountry.innerText = country;
+                        tdCity.innerText = city;
+
+                        break;
+                    }
+                    case 404: showError(`Airport with id: ${id} cannot be found`); break;
+                    case 500: showError("Server error, try again"); break;
+                }
             },
-            body: JSON.stringify({
+            () => showError("Cannot edit row, reason: network error. Try to reload this page"),
+            true,
+            JSON.stringify({
                 id,
                 name,
                 country,
                 city
             })
-        })
-            .then(res => res)
-            .then(
-                (result) => {
-                    switch (result.status) {
-                        case 200: {
-                            let tr = document.getElementById(`airport-${id}`);
-                            let tds = tr.children;
-
-                            let tdId = tds[0];
-                            let tdName = tds[1];
-                            let tdCountry = tds[2];
-                            let tdCity = tds[3];
-
-                            tdId.innerText = id;
-                            tdName.innerText = name;
-                            tdCountry.innerText = country;
-                            tdCity.innerText = city;
-
-                            break;
-                        }
-                        case 404: this.showError(`Airport with id: ${id} cannot be found`); break;
-                        case 500: this.showError("Server error, try again"); break;
-                    }
-                },
-                (error) => {
-                    this.showError("Cannot edit row, reason: network error. Try to reload this page");
-                });
+        );
     }
     addNewModalHandler(e) {
         let { id, name, country, city, error } = this.saveDataFromModal('addNewAirportModal');
@@ -512,12 +344,14 @@ class Airports extends React.Component {
             return;
         }
 
-        this.totalPassengersCount += 1;
+        let tr;
+
+        this.totalAirportsCount  += 1;
 
         if (this.currentPageItems == 6) {
-            this.createPagination();
+            createPagination(this.totalAirportsCount, this.pageNumber, 'airports');
         } else {
-            this.addNewAirport({
+            tr = this.addNewAirport({
                 id: undefined,
                 name,
                 country,
@@ -525,33 +359,36 @@ class Airports extends React.Component {
             });
         }
 
-        fetch(this.apiUrl, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
+        this.requestManager.POST(this.apiUrl,
+            (response, status) => {
+                switch (status) {
+                    case 200: {
+                        response = JSON.parse(response);
+
+                        this.searchName(response.name, tr => {
+                            tr.id = `airport-${response.id}`;
+        
+                            let tdId = tr.children[0];
+                            tdId.innerText = response.id;
+                        });
+
+                        break;
+                    }
+                    case 500: showError("Server error, try again"); break;
+                }
             },
-            body: JSON.stringify({
+            () => { 
+                showError("Cannot add row, reason: network error. Try to reload this page"); 
+                tr.remove() 
+            },
+            true,
+            JSON.stringify({
                 id,
                 name,
                 country,
                 city
             })
-        })
-            .then(res => {
-                switch (res.status) {
-                    case 200: return res.json();
-                    case 500: this.showError("Server error, try again"); break;
-                }
-            }, error => this.showError('Cannot add row, reason: network error. Try to reload this page'))
-            .then(result => {
-                this.searchName(result.name, tr => {
-                    tr.id = `airport-${result.id}`;
-
-                    let tdId = tr.children[0];
-                    tdId.innerText = result.id;
-                });
-
-            });
+        );
     }
 
     editModalCloseHandler(e) {
@@ -559,23 +396,6 @@ class Airports extends React.Component {
     }
     addNewModalCloseHandler(e) {
         this.modalCloseHandler(e);
-    }
-
-    clearInputs(idInput, nameInput, countryInput, cityInput) {
-        nameInput.classList.remove('is-valid');
-        nameInput.classList.remove('is-invalid');
-        countryInput.classList.remove('is-valid');
-        countryInput.classList.remove('is-invalid');
-        cityInput.classList.remove('is-valid');
-        cityInput.classList.remove('is-invalid');
-
-        if (idInput) {
-            idInput.value = '';
-        }
-
-        nameInput.value = '';
-        countryInput.value = '';
-        cityInput.value = '';
     }
 
     searchName(name, foundCallback) {
@@ -600,33 +420,29 @@ class Airports extends React.Component {
 
         tr.style.display = 'none';
 
-        fetch(this.apiUrl, {
-            method: "DELETE",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: id
-        })
-            .then(res => res)
-            .then(
-                (result) => {
-                    switch (result.status) {
-                        case 200: tr.remove(); break;
-                        case 404: {
-                            tr.style.display = '';
-                            this.showError(`Airport with id: ${id} cannot be found`);
-                            break;
-                        }
-                        case 500: {
-                            tr.style.display = '';
-                            this.showError("Server error, try again"); 
-                            break;}
+        this.requestManager.DELETE(this.apiUrl,
+            (response, status) => {
+                switch (status) {
+                    case 200: tr.remove(); break;
+                    case 404: {
+                        tr.style.display = '';
+                        showError(`Airport with id: ${id} cannot be found`);
+                        break;
                     }
-                },
-                (error) => {
-                    tr.style.display = '';
-                    this.showError("Cannot delete row, reason: network error. Try to reload this page");
-                });
+                    case 500: {
+                        tr.style.display = '';
+                        showError("Server error, try again"); 
+                        break;
+                    }
+                }
+            },
+            () => {
+                tr.style.display = '';
+                showError("Cannot delete row, reason: network error. Try to reload this page");
+            },
+            true,
+            id
+        );
     }
 }
 
