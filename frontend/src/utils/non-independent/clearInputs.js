@@ -1,5 +1,5 @@
 export default function clearInputs(inputs) {
-    inputs.map(input => {
+    inputs.forEach(input => {
         if (input) {
             input.classList.remove('is-valid');
             input.classList.remove('is-invalid');
