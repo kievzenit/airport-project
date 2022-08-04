@@ -950,12 +950,10 @@ class Passengers extends React.Component {
         let from = fromInput.value;
         let to = toInput.value;
 
-        this.requestManager.POST(this.apiUrl,
+        this.requestManager.POST(this.ticketApiUrl,
             (response, status) => {
                 switch (status) {
                     case 200: {
-                        response = JSON.parse(response);
-
                         let passengerId = this.currentPassengerId;
                         response.forEach(t => {
                             this.invokedByAddTickets = true;
