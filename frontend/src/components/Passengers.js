@@ -876,7 +876,7 @@ class Passengers extends React.Component {
             (response, status) => {
                 switch (status) {
                     case 200: {
-                        response = JSOn.parse(response);
+                        response = JSON.parse(response);
 
                         this.searchPassport(response.passport, tr => {
                             tr.id = `passenger-${response.id}`;
