@@ -19,6 +19,7 @@ root.render(
       <Route path="/" element={<Airports />} >
         <Route path=":page" element={<Airports />} />
       </Route>
+      <Route path="/airports/:page" element={<Airports />} />
       <Route path='/passengers' element={<Passengers />} >
         <Route path=":page" element={<Passengers />} />
       </Route>

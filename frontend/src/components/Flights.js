@@ -1,5 +1,6 @@
 import React from "react";
 import { useParams } from "react-router-dom";
+import * as bootstrap from "bootstrap";
 
 import HTTPRequestManager from "../utils/HttpRequestManager";
 import showError from "../utils/non-independent/showError";
@@ -122,7 +123,7 @@ class Flights extends React.Component {
                         <button type="button" className="btn btn-danger" onClick={this.closeSearch}>Close search</button>
 
                         <div className="btn-group">
-                            <div className="dropdown">
+                            <div className="dropdown" id="dropdown">
                                 <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style={{
                                     borderTopRightRadius: 0,
                                     borderBottomRightRadius: 0
@@ -665,6 +666,7 @@ class Flights extends React.Component {
 
         if (!error) {
             modal.hide();
+            document.querySelector('.modal-backdrop').remove();
 
             statusInput.classList.remove('is-valid');
             statusInput.classList.remove('is-invalid');
@@ -785,7 +787,7 @@ class Flights extends React.Component {
         this.totalFlightsCount += 1;
 
         if (this.currentPageItems == 6) {
-            this.createPagination(this.totalFlightsCount, this.pageNumber, 'flights');
+            createPagination(this.totalFlightsCount, this.pageNumber, 'flights');
         } else {
             tr = this.addNewFlight({
                 id: undefined,

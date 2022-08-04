@@ -1,5 +1,6 @@
 import React from "react";
 import { useParams } from "react-router-dom";
+import * as bootstrap from "bootstrap";
 
 import HTTPRequestManager from "../utils/HttpRequestManager";
 import showError from "../utils/non-independent/showError";
@@ -790,6 +791,7 @@ class Passengers extends React.Component {
 
         if (!error) {
             modal.hide();
+            document.querySelector('.modal-backdrop').remove();
 
             if (genderInput) {
                 genderInput.classList.remove('is-invalid');
@@ -858,7 +860,7 @@ class Passengers extends React.Component {
         this.totalPassengersCount += 1;
 
         if (this.currentPageItems == 6) {
-            this.createPagination(this.totalPassengersCount, this.pageNumber, 'passengers');
+            createPagination(this.totalPassengersCount, this.pageNumber, 'passengers');
         } else {
             tr = this.addNewPassenger({
                 id: undefined,
@@ -971,6 +973,7 @@ class Passengers extends React.Component {
                         ticketsContainer.style.display = '';
         
                         modal.hide();
+                        document.querySelector('.modal-backdrop').remove();
                         this.ticketModalCloseHandler();
 
                         break;

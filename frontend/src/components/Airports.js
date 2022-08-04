@@ -1,5 +1,6 @@
 import React from "react";
 import { useParams } from "react-router-dom";
+import * as bootstrap from "bootstrap";
 
 import HTTPRequestManager from "../utils/HttpRequestManager";
 import createPagination from "../utils/non-independent/createPagination";
@@ -279,6 +280,7 @@ class Airports extends React.Component {
 
         if (!error) {
             modal.hide();
+            document.querySelector('.modal-backdrop').remove();
             clearInputs([idInput, nameInput, countryInput, cityInput]);
         }
 
