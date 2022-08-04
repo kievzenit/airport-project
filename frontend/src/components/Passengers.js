@@ -1,6 +1,12 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 
+import HTTPRequestManager from "../utils/HttpRequestManager";
+import showError from "../utils/non-independent/showError";
+import createPagination from "../utils/non-independent/createPagination";
+import { validateInput } from "../utils/non-independent/validateInput";
+import clearInputs from "../utils/non-independent/clearInputs";
+
 import Header from "./non-independent/Header";
 import Modal from "./non-independent/Modal";
 
@@ -41,6 +47,8 @@ class Passengers extends React.Component {
         this.pagesCount = 1;
         this.currentPageItems = 0;
 
+        this.requestManager = new HTTPRequestManager();
+
         this.passengers = [];
     }
 
@@ -48,37 +56,33 @@ class Passengers extends React.Component {
         this.pageNumber = this.props.params.page == undefined ? '0' : this.props.params.page;
 
         if (!this.pageNumber.isPositiveInteger()) {
-            fetch(this.apiUrl + 1)
-                .then(res => res.json())
-                .then(
-                    (result) => {
-                        this.pageNumber = 1
-                        this.totalPassengersCount = result.totalCount;
-                        this.passengers = result.items;
-                        this.setPassengers();
-                        this.createPagination();
-                    },
-                    (error) => {
-                        this.showError("Network error, try to reload this page");
-                    });
+            this.requestManager.GET(this.apiUrl + 1,
+                (response, status) => {
+                    response = JSON.parse(response);
 
-            
+                    this.pageNumber = 1
+                    this.totalPassengersCount = response.totalCount;
+                    this.passengers = response.items;
+                    this.setPassengers();
+                    createPagination(this.totalPassengersCount, this.pageNumber, 'passengers');
+                },
+                () => showError("Network error, try to reload this page")
+            );            
             
             return;
         }
 
-        fetch(this.apiUrl + this.pageNumber)
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.totalPassengersCount = result.totalCount;
-                    this.passengers = result.items;
-                    this.setPassengers();
-                    this.createPagination();
-                },
-                (error) => {
-                    this.showError("Network error, try to reload this page");
-                });
+        this.requestManager.GET(this.apiUrl + this.pageNumber,
+            (response, status) => {
+                response = JSON.parse(response);
+
+                this.totalPassengersCount = response.totalCount;
+                this.passengers = response.items;
+                this.setPassengers();
+                createPagination(this.totalPassengersCount, this.pageNumber, 'passengers');
+            },
+            () => showError("Network error, try to reload this page")
+        );
     }
 
     render() {
@@ -287,103 +291,6 @@ class Passengers extends React.Component {
         );
     }
 
-    createPagination() {
-        if (this.totalPassengersCount <= 6) { return; }
-
-        let pagination = document.querySelector('.pagination');
-        pagination?.remove();
-
-        let container = document.querySelector('.container');
-
-        let nav = document.createElement('nav');
-        let ul = document.createElement('ul');
-
-        ul.classList.add('pagination', 'justify-content-end');
-
-        this.pagesCount = Math.ceil(this.totalPassengersCount / 6);
-
-        let previous = document.createElement('li');
-
-        if (this.pageNumber == 1) {
-            let previousSpan = document.createElement('span');
-
-            previous.classList.add('page-item', 'disabled');
-            previousSpan.classList.add('page-link');
-
-            previousSpan.innerText = 'Previous';
-
-            previous.appendChild(previousSpan);
-        } else {
-            let previousLink = document.createElement('a');
-
-            previous.classList.add('page-item');
-            previousLink.classList.add('page-link');
-
-            previousLink.innerText = 'Previous';
-            previousLink.href = `/passengers/${this.pageNumber - 1}`;
-
-            previous.appendChild(previousLink);
-        }
-
-        nav.appendChild(ul);
-        ul.appendChild(previous);
-
-        for (let i = 1; i <= this.pagesCount; i++) {
-
-            let pageItem = document.createElement('li');
-
-            pageItem.classList.add('page-item');
-
-            if (this.pageNumber == i) {
-                let pageSpan = document.createElement('span');
-                pageSpan.innerText = i;
-
-                pageSpan.classList.add('page-link');
-                pageItem.classList.add('active');
-
-                pageItem.setAttribute('aria-current', 'page');
-
-                pageItem.appendChild(pageSpan);
-            } else {
-                let pageLink = document.createElement('a');
-                pageLink.innerText = i;
-
-                pageLink.classList.add('page-link');
-                pageLink.href = `/passengers/${i}`;
-
-                pageItem.appendChild(pageLink);
-            }
-
-            ul.appendChild(pageItem);
-        }
-
-        let next = document.createElement('li');
-
-        if (this.pageNumber == this.pagesCount) {
-            let nextSpan = document.createElement('span');
-
-            next.classList.add('page-item', 'disabled');
-            nextSpan.classList.add('page-link');
-
-            nextSpan.innerText = 'Next';
-
-            next.appendChild(nextSpan);
-        } else {
-            let nextLink = document.createElement('a');
-
-            next.classList.add('page-item');
-            nextLink.classList.add('page-link');
-
-            nextLink.innerText = 'Next';
-            nextLink.href = `/passengers/${parseInt(this.pageNumber) + 1}`;
-
-            next.appendChild(nextLink);
-        }
-
-        ul.appendChild(next);
-        container.appendChild(nav);
-    }
-
     search() {
         let input = document.querySelector('#passengers-found-table .form-control');
         let tbody = document.querySelector('#passengers-found-table tbody');
@@ -395,91 +302,81 @@ class Passengers extends React.Component {
 
         switch (searchType) {
             case 'Passport': {
-                if (this.validateInput(input, (passport) => {
+                if (validateInput(input, (passport) => {
                     let re = /^[a-z]{2}\d{6}$/;
                     return re.test(passport);
                 }, 'Passport must be in this format: ab123456')) { return; }
 
-                fetch(this.apiUrl + `search/byPassport/${searchValue}`, {
-                    method: "GET"
-                })
-                    .then(res => res)
-                    .then(
-                        (result) => {
-                            switch (result.status) {
-                                case 200: return result.json();
-                                case 404: this.showError(`Cannot find passenger with passport: ${searchValue}`); break;
-                                case 500: this.showError('Server error, please, contact administrator'); break;
+                this.requestManager.GET(this.apiUrl + `search/byPassport/${searchValue}`,
+                    (response, status) => {
+                        switch (status) {
+                            case 200: {
+                                response = JSON.parse(response);
+                                this.addNewPassenger(response, tbody);
+                                break;
                             }
-                        },
-                        (error) => {
-                            this.showError("Cannot search, reason: network error. Try to reload this page");
-                        })
-                    .then((result) => {
-                        this.addNewPassenger(result, tbody);
-                    });
+                            case 404: showError(`Cannot find passenger with passport: ${searchValue}`); break;
+                            case 500: showError('Server error, please, contact administrator'); break;
+                        }
+                    },
+                    () => showError("Cannot search, reason: network error. Try to reload this page")
+                );
 
                 break;
             }
             case 'Firstname': {
-                if (this.validateInput(input, (firstname) => {
+                if (validateInput(input, (firstname) => {
                     return firstname.length <= 50;
                 }, "Firstname length must be not grater than 50")) { return; }
-        
-                fetch(this.apiUrl + `search/byFirtsname/${searchValue}`, {
-                    method: "GET"
-                })
-                    .then(res => res)
-                    .then(
-                        (result) => {
-                            switch (result.status) {
-                                case 200: return result.json();
-                                case 500: this.showError('Server error, please, contact administrator'); break;
-                            }
-                        },
-                        (error) => {
-                            this.showError("Cannot search, reason: network error. Try to reload this page");
-                        })
-                    .then(result => {
-                        if (result.length == 0) {
-                            this.showError(`Cannot find passengers with firstname: ${searchValue}`);
-                        }
 
-                        result.map(p => {
-                            this.addNewPassenger(p, tbody);
-                        });
-                    });
+                this.requestManager.GET(this.apiUrl + `search/byFirtsname/${searchValue}`,
+                    (response, status) => {
+                        switch (status) {
+                            case 200: {
+                                response = JSON.parse(response);
+
+                                if (response.length == 0) {
+                                    showError(`Cannot find passengers with firstname: ${searchValue}`);
+                                }
+        
+                                response.map(p => {
+                                    this.addNewPassenger(p, tbody);
+                                });
+                                break;
+                            }
+                            case 500: showError('Server error, please, contact administrator'); break;
+                        }
+                    },
+                    () => showError("Cannot search, reason: network error. Try to reload this page")
+                );
 
                 break;
             }
             case 'Lastname': {
-                if (this.validateInput(input, (lastname) => {
+                if (validateInput(input, (lastname) => {
                     return lastname.length <= 50;
                 }, "Lastname length must be not grater than 50")) { return; }
 
-                fetch(this.apiUrl + `search/byLastname/${searchValue}`, {
-                    method: "GET"
-                })
-                    .then(res => res)
-                    .then(
-                        (result) => {
-                            switch (result.status) {
-                                case 200: return result.json();
-                                case 500: this.showError('Server error, please, contact administrator'); break;
-                            }
-                        },
-                        (error) => {
-                            this.showError("Cannot search, reason: network error. Try to reload this page");
-                        })
-                    .then((result) => {
-                        if (result.length == 0) {
-                            this.showError(`Cannot find passengers with lastname: ${searchValue}`);
-                        }
+                this.requestManager.GET(this.apiUrl + `search/byLastname/${searchValue}`,
+                    (response, status) => {
+                        switch (status) {
+                            case 200: {
+                                response = JSON.parse(response);
 
-                        result.map(p => {
-                            this.addNewPassenger(p, tbody);
-                        });
-                    });
+                                if (response.length == 0) {
+                                    showError(`Cannot find passengers with lastname: ${searchValue}`);
+                                }
+        
+                                response.map(p => {
+                                    this.addNewPassenger(p, tbody);
+                                });
+                                break;
+                            }
+                            case 500: showError('Server error, please, contact administrator'); break;
+                        }
+                    },
+                    () => showError("Cannot search, reason: network error. Try to reload this page")
+                );
 
                 break;
             }
@@ -574,17 +471,19 @@ class Passengers extends React.Component {
 
         this.currentPassengerId = passengerId;
 
-        fetch(`http://api.airportproject.com/tickets/passenger/${passengerId}/`)
-            .then(res => res.json())
-            .then(res => {
+        this.requestManager.GET(`http://api.airportproject.com/tickets/passenger/${passengerId}/`,
+            (response, status) => {
+                response = JSON.parse(response);
+
                 loadingElement.style.display = 'none';
-                res.forEach(t => this.addNewTicket(t, passengerId));
-            }, error => {
-                console.error(error)
+                response.forEach(t => this.addNewTicket(t, passengerId));
+            },
+            () => {
                 passengersContainer.style.display = '';
                 ticketsContainer.style.display = 'none';
-                this.showError("Cannot get tickets, reason: network error. Try to reload this page");
-            });
+                showError("Cannot get tickets, reason: network error. Try to reload this page");
+            }
+        );
     }
 
     setCurrentPassengerId(e) {
@@ -772,76 +671,16 @@ class Passengers extends React.Component {
         });
     }
 
-    showError(message) {
-        let container = document.querySelector('.toast-container');
-
-        let toast = document.createElement('div');
-        let flexContainer = document.createElement('div');
-        let toasBody = document.createElement('div');
-        let closeButton = document.createElement('button');
-
-        toast.classList.add('toast', 'align-items-center', 'fade', 'text-bg-danger', 'show');
-        toast.style.marginBottom = '0.3rem';
-
-        flexContainer.classList.add('d-flex');
-        toasBody.classList.add('toast-body');
-        closeButton.classList.add('btn-close', 'btn-close-white', 'me-2', 'm-auto');
-
-        toasBody.innerText = message;
-
-        flexContainer.appendChild(toasBody);
-        flexContainer.appendChild(closeButton);
-        toast.appendChild(flexContainer);
-        container.appendChild(toast);
-
-        let onCloseClick = () => {
-            toast.remove();
-        }
-
-        closeButton.addEventListener('click', onCloseClick);
-
-        setTimeout(() => onCloseClick(), 10000);
-    }
-
     validateInputOnChange(e) {
         if (e.target.id == 'birthday-input') {
-            this.validateInput(e.target, (birthday) => {
+            validateInput(e.target, (birthday) => {
                 return Date.now() >= Date.parse(birthday);
             }, 'Birthday must be not day in the future');
 
             return;
         }
 
-        this.validateInput(e.target);
-    }
-
-    validateInput(input, validateCallback, validateMessage) {
-        let error = false;
-
-        if (!input.value) {
-            input.classList.remove('is-valid');
-            input.classList.add('is-invalid');
-
-            this.showError(`Field ${input.placeholder.toLowerCase()} must be not empty`)
-
-            error = true;
-        }
-
-        if (!error && validateCallback && !validateCallback(input.value)) {
-            input.classList.remove('is-valid');
-            input.classList.add('is-invalid');
-
-            this.showError(`${validateMessage}`)
-
-            error = true;
-        }
-
-        if (!error) {
-            input.classList.remove('is-invalid');
-            input.classList.add('is-valid');
-        }
-
-        return error;
+        validateInput(e.target);
     }
 
     selectedGender(e) {
@@ -903,17 +742,17 @@ class Passengers extends React.Component {
             genderId = genderInput.getAttribute('gender-id');
         }
 
-        setError(this.validateInput(firstnameInput));
-        setError(this.validateInput(lastnameInput));
+        setError(validateInput(firstnameInput));
+        setError(validateInput(lastnameInput));
 
-        setError(this.validateInput(passportInput, (passport) => {
+        setError(validateInput(passportInput, (passport) => {
             let re = /^[a-z]{2}\d{6}$/;
             return re.test(passport);
         }, 'Passport must be in this format: ab123456'));
 
         if (modalId == 'addNewPassenger') {
             this.searchPassport(passportInput.value, tr => {
-                this.showError("Passport must be unique");
+                showError("Passport must be unique");
                 setError(true);
 
                 tr.classList.remove('is-valid');
@@ -921,16 +760,16 @@ class Passengers extends React.Component {
             });
         }
 
-        setError(this.validateInput(nationalityInput));
+        setError(validateInput(nationalityInput));
 
         if (birthdayInput) {
-            setError(this.validateInput(birthdayInput, (birthday) => {
+            setError(validateInput(birthdayInput, (birthday) => {
                 return Date.now() >= Date.parse(birthday);
             }, 'Birthday must be not day in the future'));
         }
 
         if (genderId == '' && genderInput) {
-            this.showError('Gender must be selected');
+            showError('Gender must be selected');
 
             genderInput.classList.remove('is-valid');
             genderInput.classList.add('is-invalid');
@@ -959,7 +798,7 @@ class Passengers extends React.Component {
                 genderInput.setAttribute('gender-id', '');
             }
 
-            this.clearInputs(idInput, firstnameInput, lastnameInput, passportInput, nationalityInput, birthdayInput);
+            clearInputs([idInput, firstnameInput, lastnameInput, passportInput, nationalityInput, birthdayInput]);
         }
 
         return returnObj;
@@ -972,12 +811,31 @@ class Passengers extends React.Component {
             return;
         }
 
-        fetch(this.apiUrl, {
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json'
+        this.requestManager.PUT(this.apiUrl,
+            (response, status) => {
+                switch (status) {
+                    case 200: {
+                        let tr = document.getElementById(`passenger-${id}`);
+                        let tds = tr.children;
+
+                        this.setPassengerByTDs(tds, id, firstname, lastname, passport, nationality);
+
+                        if (this.isInvokedBySearch) {
+                            tr = document.querySelectorAll(`#passenger-${id}`)[1];
+                            tds = tr.children;
+
+                            this.setPassengerByTDs(tds, id, firstname, lastname, passport, nationality);
+                        }
+
+                        break;
+                    }
+                    case 404: showError(`Passenger with id: ${id} cannot be found`); break;
+                    case 500: showError("Server error, try again"); break;
+                }
             },
-            body: JSON.stringify({
+            () => showError("Cannot edit row, reason: network error. Try to reload this page"),
+            true,
+            JSON.stringify({
                 id,
                 firstname,
                 lastname,
@@ -986,33 +844,7 @@ class Passengers extends React.Component {
                 birthday,
                 gender
             })
-        })
-            .then(res => res)
-            .then(
-                (result) => {
-                    switch (result.status) {
-                        case 200: {
-                            let tr = document.getElementById(`passenger-${id}`);
-                            let tds = tr.children;
-
-                            this.setPassengerByTDs(tds, id, firstname, lastname, passport, nationality);
-
-                            if (this.isInvokedBySearch) {
-                                tr = document.querySelectorAll(`#passenger-${id}`)[1];
-                                tds = tr.children;
-
-                                this.setPassengerByTDs(tds, id, firstname, lastname, passport, nationality);
-                            }
-
-                            break;
-                        }
-                        case 404: this.showError(`Passenger with id: ${id} cannot be found`); break;
-                        case 500: this.showError("Server error, try again"); break;
-                    }
-                },
-                (error) => {
-                    this.showError("Cannot edit row, reason: network error. Try to reload this page");
-                });
+        );
     }
     addNewModalHandler(e) {
         let { id, firstname, lastname, passport, nationality, birthday, gender, ticketId, error } = this.saveDataFromModal('addNewPassengerModal');
@@ -1026,7 +858,7 @@ class Passengers extends React.Component {
         this.totalPassengersCount += 1;
 
         if (this.currentPageItems == 6) {
-            this.createPagination();
+            this.createPagination(this.totalPassengersCount, this.pageNumber, 'passengers');
         } else {
             tr = this.addNewPassenger({
                 id: undefined,
@@ -1040,12 +872,35 @@ class Passengers extends React.Component {
             });
         }
 
-        fetch(this.apiUrl, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
+        this.requestManager.POST(this.apiUrl,
+            (response, status) => {
+                switch (status) {
+                    case 200: {
+                        response = JSOn.parse(response);
+
+                        this.searchPassport(response.passport, tr => {
+                            tr.id = `passenger-${response.id}`;
+        
+                            let tdId = tr.children[0];
+                            tdId.innerText = response.id;
+        
+                            let tdTickets = tr.children[7];
+                            tdTickets.setAttribute('passenger-id', response.id);
+                        });
+
+                        break;
+                    }
+                    case 500: {
+                        showError(`Passenger with passport: ${passport} is already exists!`);
+                        tr.remove();
+                        this.currentPageItems -= 1;
+                        break;
+                    }
+                }
             },
-            body: JSON.stringify({
+            () => showError('Cannot add row, reason: network error. Try to reload this page'),
+            true,
+            JSON.stringify({
                 firstname,
                 lastname,
                 passport,
@@ -1054,30 +909,7 @@ class Passengers extends React.Component {
                 gender,
                 ticketId
             })
-        })
-            .then(res => {
-                switch (res.status) {
-                    case 200: return res.json();
-                    case 500: {
-                        this.showError(`Passenger with passport: ${passport} is already exists!`);
-                        tr.remove();
-                        this.currentPageItems -= 1;
-                        break;
-                    }
-                }
-            }, error => this.showError('Cannot add row, reason: network error. Try to reload this page'))
-            .then(result => {
-                this.searchPassport(result.passport, tr => {
-                    tr.id = `passenger-${result.id}`;
-
-                    let tdId = tr.children[0];
-                    tdId.innerText = result.id;
-
-                    let tdTickets = tr.children[7];
-                    tdTickets.setAttribute('passenger-id', result.id);
-                });
-
-            });
+        );
     }
     ticketModalHandler(e) {
         let ticketModal = document.getElementById('ticketModal');
@@ -1101,13 +933,13 @@ class Passengers extends React.Component {
             ticketTypeInput.classList.remove('is-valid');
             ticketTypeInput.classList.add('is-invalid');
 
-            this.showError('Ticket type must be chosen');
+            showError('Ticket type must be chosen');
 
             setError(true);
         }
 
-        setError(this.validateInput(fromInput));
-        setError(this.validateInput(toInput));
+        setError(validateInput(fromInput));
+        setError(validateInput(toInput));
 
         if (error) {
             return;
@@ -1116,62 +948,51 @@ class Passengers extends React.Component {
         let from = fromInput.value;
         let to = toInput.value;
 
-        console.log(JSON.stringify({
-            from,
-            to,
-            type: ticketTypeId
-        }))
+        this.requestManager.POST(this.apiUrl,
+            (response, status) => {
+                switch (status) {
+                    case 200: {
+                        response = JSON.parse(response);
 
-        fetch(this.ticketApiUrl, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
+                        let passengerId = this.currentPassengerId;
+                        response.forEach(t => {
+                            this.invokedByAddTickets = true;
+                            this.addNewTicket(t, passengerId);
+                        });
+        
+                        let containers = document.querySelectorAll('.container');
+        
+                        let passengersContainer = containers[0];
+                        let ticketsContainer = containers[1];
+                        let searchContainer = containers[2];
+        
+                        passengersContainer.style.display = 'none';
+                        searchContainer.style.display = 'none';
+                        ticketsContainer.style.display = '';
+        
+                        modal.hide();
+                        this.ticketModalCloseHandler();
+
+                        break;
+                    }
+                    case 404: {
+                        showError(`Ticket from: ${from}, to: ${to} cannot be found`);
+                        break;
+                    }
+                    case 500: {
+                        showError("Server error, try again");
+                        break;
+                    }
+                }
             },
-            body: JSON.stringify({
+            () => showError("Cannot delete row, reason: network error. Try to reload this page"),
+            true,
+            JSON.stringify({
                 from,
                 to,
                 type: ticketTypeId
             })
-        })
-            .then(res => res)
-            .then(
-                (result) => {
-                    switch (result.status) {
-                        case 200: return result.json();
-                        case 404: {
-                            this.showError(`Ticket from: ${from}, to: ${to} cannot be found`);
-                            break;
-                        }
-                        case 500: {
-                            this.showError("Server error, try again");
-                            break;
-                        }
-                    }
-                },
-                (error) => {
-                    //tr.style.display = '';
-                    this.showError("Cannot delete row, reason: network error. Try to reload this page");
-                })
-            .then(tickets => {
-                let passengerId = this.currentPassengerId;
-                tickets.forEach(t => {
-                    this.invokedByAddTickets = true;
-                    this.addNewTicket(t, passengerId);
-                });
-
-                let containers = document.querySelectorAll('.container');
-
-                let passengersContainer = containers[0];
-                let ticketsContainer = containers[1];
-                let searchContainer = containers[2];
-
-                passengersContainer.style.display = 'none';
-                searchContainer.style.display = 'none';
-                ticketsContainer.style.display = '';
-
-                modal.hide();
-                this.ticketModalCloseHandler();
-            });
+        );
     }
 
     setPassengerByTDs(tds, id, firstname, lastname, passport, nationality) {
@@ -1198,18 +1019,13 @@ class Passengers extends React.Component {
         let nationalityInput = document.querySelector(`#${modalId} #nationality-input`);
         let genderInput = document.querySelector(`#${modalId} #gender-input`);
         let birthdayInput = document.querySelector(`#${modalId} #birthday-input`);
-        let ticketIdInput = document.querySelector(`#${modalId} #ticket-input`);
 
         genderInput.setAttribute('gender-id', '');
-        ticketIdInput.setAttribute('ticket-id', '');
 
-        this.clearInputs(idInput, firstnameInput, lastnameInput, passportInput, nationalityInput, birthdayInput);
+        clearInputs([idInput, firstnameInput, lastnameInput, passportInput, nationalityInput, birthdayInput]);
 
         genderInput.classList.remove('is-valid');
         genderInput.classList.remove('is-invalid');
-
-        ticketIdInput.classList.add('btn-primary');
-        ticketIdInput.classList.remove('btn-dark');
     }
     editModalCloseHandler(e) {
         let modalId = 'addNewPassengerModal';
@@ -1219,14 +1035,8 @@ class Passengers extends React.Component {
         let lastnameInput = document.querySelector(`#${modalId} #lastname-input`);
         let passportInput = document.querySelector(`#${modalId} #passport-input`);
         let nationalityInput = document.querySelector(`#${modalId} #nationality-input`);
-        let ticketIdInput = document.querySelector(`#${modalId} #ticket-input`);
 
-        ticketIdInput.setAttribute('ticket-id', '');
-
-        this.clearInputs(idInput, firstnameInput, lastnameInput, passportInput, nationalityInput, null);
-
-        ticketIdInput.classList.add('btn-primary');
-        ticketIdInput.classList.remove('btn-dark');
+        clearInputs([idInput, firstnameInput, lastnameInput, passportInput, nationalityInput]);
     }
     ticketModalCloseHandler(e) {
         let fromInput = document.querySelector('#ticketModal #from-input');
@@ -1282,19 +1092,19 @@ class Passengers extends React.Component {
                         }
                         case 404: {
                             tr.style.display = '';
-                            this.showError(`Ticket with id: ${ticketId} or passenger with id: ${passengerId} cannot be found`);
+                            showError(`Ticket with id: ${ticketId} or passenger with id: ${passengerId} cannot be found`);
                             break;
                         }
                         case 500: {
                             tr.style.display = '';
-                            this.showError("Server error, try again");
+                            showError("Server error, try again");
                             break;
                         }
                     }
                 },
                 (error) => {
                     tr.style.display = '';
-                    this.showError("Cannot add ticket, reason: network error. Try to reload this page");
+                    showError("Cannot add ticket, reason: network error. Try to reload this page");
                 });
     }
 
@@ -1305,33 +1115,31 @@ class Passengers extends React.Component {
 
         tr.style.display = 'none';
 
-        fetch(this.apiUrl + `ticket/?passengerId=${passengerId}&ticketId=${ticketId}`, {
-            method: "DELETE"
-        })
-            .then(res => res)
-            .then(
-                (result) => {
-                    switch (result.status) {
-                        case 200: {
-                            tr.remove();
-                            break;
-                        }
-                        case 404: {
-                            tr.style.display = '';
-                            this.showError(`Ticket with id: ${ticketId} or passenger with id: ${passengerId} cannot be found`);
-                            break;
-                        }
-                        case 500: {
-                            tr.style.display = '';
-                            this.showError("Server error, try again");
-                            break;
-                        }
+        this.requestManager.DELETE(this.apiUrl + `ticket/?passengerId=${passengerId}&ticketId=${ticketId}`,
+            (response, status) => {
+                switch (status) {
+                    case 200: {
+                        tr.remove();
+                        break;
                     }
-                },
-                (error) => {
-                    tr.style.display = '';
-                    this.showError("Cannot remove ticket, reason: network error. Try to reload this page");
-                });
+                    case 404: {
+                        tr.style.display = '';
+                        showError(`Ticket with id: ${ticketId} or passenger with id: ${passengerId} cannot be found`);
+                        break;
+                    }
+                    case 500: {
+                        tr.style.display = '';
+                        showError("Server error, try again");
+                        break;
+                    }
+                }
+            },
+            () => {
+                tr.style.display = '';
+                showError("Cannot remove ticket, reason: network error. Try to reload this page");
+            },
+            false
+        );
     }
 
     deleteRow(e) {
@@ -1353,85 +1161,53 @@ class Passengers extends React.Component {
 
         tr.style.display = 'none';
 
-        fetch(this.apiUrl, {
-            method: "DELETE",
-            headers: {
-                'Content-Type': 'application/json'
+        this.requestManager.DELETE(this.apiUrl,
+            (response, status) => {
+                switch (status) {
+                    case 200: {
+                        tr.remove();
+                        this.currentPageItems -= 1;
+                        
+                        if (this.isInvokedBySearch) {
+                            tr2.remove();
+                        }
+
+                        break;
+                    }
+                    case 404: {
+                        tr.style.display = '';
+
+                        if (this.isInvokedBySearch) {
+                            tr2.style.display = '';
+                        }
+
+                        showError(`Passenger with id: ${id} cannot be found`);
+                        break;
+                    }
+                    case 500: {
+                        tr.style.display = '';
+                        
+                        if (this.isInvokedBySearch) {
+                            tr2.style.display = '';
+                        }
+
+                        showError("Server error, try again");
+                        break;
+                    }
+                }
             },
-            body: JSON.stringify(id)
-        })
-            .then(res => res)
-            .then(
-                (result) => {
-                    switch (result.status) {
-                        case 200: {
-                            tr.remove();
-                            this.currentPageItems -= 1;
-                            
-                            if (this.isInvokedBySearch) {
-                                tr2.remove();
-                            }
+            () => {
+                tr.style.display = '';
 
-                            break;
-                        }
-                        case 404: {
-                            tr.style.display = '';
+                if (this.isInvokedBySearch) {
+                    tr2.style.display = '';
+                }
 
-                            if (this.isInvokedBySearch) {
-                                tr2.style.display = '';
-                            }
-
-                            this.showError(`Passenger with id: ${id} cannot be found`);
-                            break;
-                        }
-                        case 500: {
-                            tr.style.display = '';
-                            
-                            if (this.isInvokedBySearch) {
-                                tr2.style.display = '';
-                            }
-
-                            this.showError("Server error, try again");
-                            break;
-                        }
-                    }
-                },
-                (error) => {
-                    tr.style.display = '';
-                    
-                    if (this.isInvokedBySearch) {
-                        tr2.style.display = '';
-                    }
-
-                    this.showError("Cannot delete row, reason: network error. Try to reload this page");
-                });
-    }
-
-    clearInputs(idInput, firstnameInput, lastnameInput, passportInput, nationalityInput, birthdayInput) {
-        firstnameInput.classList.remove('is-valid');
-        firstnameInput.classList.remove('is-invalid');
-        lastnameInput.classList.remove('is-valid');
-        lastnameInput.classList.remove('is-invalid');
-        passportInput.classList.remove('is-valid');
-        passportInput.classList.remove('is-invalid');
-        nationalityInput.classList.remove('is-valid');
-        nationalityInput.classList.remove('is-invalid');
-
-        if (birthdayInput) {
-            birthdayInput.classList.remove('is-valid');
-            birthdayInput.classList.remove('is-invalid');
-
-            birthdayInput.value = '';
-        }
-
-        if (idInput) {
-            idInput.value = '';
-        }
-
-        firstnameInput.value = '';
-        lastnameInput.value = '';
-        passportInput.value = '';
-        nationalityInput.value = '';
+                showError("Cannot delete row, reason: network error. Try to reload this page");
+            },
+            true,
+            id
+        );
     }
 }
 
