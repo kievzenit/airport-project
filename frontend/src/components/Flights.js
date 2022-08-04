@@ -1,6 +1,12 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 
+import HTTPRequestManager from "../utils/HttpRequestManager";
+import showError from "../utils/non-independent/showError";
+import createPagination from "../utils/non-independent/createPagination";
+import { validateInput } from "../utils/non-independent/validateInput";
+import clearInputs from "../utils/non-independent/clearInputs";
+
 import Header from "./non-independent/Header";
 import Modal from "./non-independent/Modal";
 
@@ -14,12 +20,9 @@ class Flights extends React.Component {
         this.openSearch = this.openSearch.bind(this);
         this.closeSearch = this.closeSearch.bind(this);
 
-        this.validateInput = this.validateInput.bind(this);
         this.validateInputOnChange = this.validateInputOnChange.bind(this);
 
         this.addNewFlight = this.addNewFlight.bind(this);
-
-        this.clearInputs = this.clearInputs.bind(this);
 
         this.addDataToEditModal = this.addDataToEditModal.bind(this);
         this.saveDataFromModal = this.saveDataFromModal.bind(this);
@@ -41,6 +44,8 @@ class Flights extends React.Component {
         this.pagesCount = 1;
         this.currentPageItems = 0;
 
+        this.requestManager = new HTTPRequestManager();
+
         this.flights = [];
     }
 
@@ -48,37 +53,33 @@ class Flights extends React.Component {
         this.pageNumber = this.props.params.page == undefined ? '0' : this.props.params.page;
 
         if (!this.pageNumber.isPositiveInteger()) {
-            fetch(this.apiUrl + 1)
-                .then(res => res.json())
-                .then(
-                    (result) => {
-                        this.pageNumber = 1
-                        this.totalFlightsCount = result.totalCount;
-                        this.flights = result.items;
-                        this.setFlights();
-                        this.createPagination();
-                    },
-                    (error) => {
-                        this.showError("Network error, try to reload this page");
-                    });
+            this.requestManager.GET(this.apiUrl + 1,
+                (response, status) => {
+                    response = JSON.parse(response);
 
-            
+                    this.pageNumber = 1
+                    this.totalFlightsCount = response.totalCount;
+                    this.flights = response.items;
+                    this.setFlights();
+                    createPagination(this.totalFlightsCount, this.pageNumber, 'flights');
+                },
+                () => showError("Network error, try to reload this page")
+            );            
             
             return;
         }
 
-        fetch(this.apiUrl + this.pageNumber)
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.totalFlightsCount = result.totalCount;
-                    this.flights = result.items;
-                    this.setFlights();
-                    this.createPagination();
-                },
-                (error) => {
-                    this.showError("Network error, try to reload this page");
-                });
+        this.requestManager.GET(this.apiUrl + this.pageNumber,
+            (response, status) => {
+                response = JSON.parse(response);
+
+                this.totalFlightsCount = response.totalCount;
+                this.flights = response.items;
+                this.setFlights();
+                createPagination(this.totalFlightsCount, this.pageNumber, 'flights');
+            },
+            () => showError("Network error, try to reload this page")
+        );
     }
 
     render() {
@@ -271,103 +272,6 @@ class Flights extends React.Component {
         );
     }
 
-    createPagination() {
-        if (this.totalFlightsCount <= 6) { return; }
-
-        let pagination = document.querySelector('.pagination');
-        pagination?.remove();
-
-        let container = document.querySelector('.container');
-
-        let nav = document.createElement('nav');
-        let ul = document.createElement('ul');
-
-        ul.classList.add('pagination', 'justify-content-end');
-
-        this.pagesCount = Math.ceil(this.totalFlightsCount / 6);
-
-        let previous = document.createElement('li');
-
-        if (this.pageNumber == 1) {
-            let previousSpan = document.createElement('span');
-
-            previous.classList.add('page-item', 'disabled');
-            previousSpan.classList.add('page-link');
-
-            previousSpan.innerText = 'Previous';
-
-            previous.appendChild(previousSpan);
-        } else {
-            let previousLink = document.createElement('a');
-
-            previous.classList.add('page-item');
-            previousLink.classList.add('page-link');
-
-            previousLink.innerText = 'Previous';
-            previousLink.href = `/flights/${this.pageNumber - 1}`;
-
-            previous.appendChild(previousLink);
-        }
-
-        nav.appendChild(ul);
-        ul.appendChild(previous);
-
-        for (let i = 1; i <= this.pagesCount; i++) {
-
-            let pageItem = document.createElement('li');
-
-            pageItem.classList.add('page-item');
-
-            if (this.pageNumber == i) {
-                let pageSpan = document.createElement('span');
-                pageSpan.innerText = i;
-
-                pageSpan.classList.add('page-link');
-                pageItem.classList.add('active');
-
-                pageItem.setAttribute('aria-current', 'page');
-
-                pageItem.appendChild(pageSpan);
-            } else {
-                let pageLink = document.createElement('a');
-                pageLink.innerText = i;
-
-                pageLink.classList.add('page-link');
-                pageLink.href = `/flights/${i}`;
-
-                pageItem.appendChild(pageLink);
-            }
-
-            ul.appendChild(pageItem);
-        }
-
-        let next = document.createElement('li');
-
-        if (this.pageNumber == this.pagesCount) {
-            let nextSpan = document.createElement('span');
-
-            next.classList.add('page-item', 'disabled');
-            nextSpan.classList.add('page-link');
-
-            nextSpan.innerText = 'Next';
-
-            next.appendChild(nextSpan);
-        } else {
-            let nextLink = document.createElement('a');
-
-            next.classList.add('page-item');
-            nextLink.classList.add('page-link');
-
-            nextLink.innerText = 'Next';
-            nextLink.href = `/flights/${parseInt(this.pageNumber) + 1}`;
-
-            next.appendChild(nextLink);
-        }
-
-        ul.appendChild(next);
-        container.appendChild(nav);
-    }
-
     search() {
         let input = document.querySelector('#flights-found-table .form-control');
         let tbody = document.querySelector('#flights-found-table tbody');
@@ -379,92 +283,83 @@ class Flights extends React.Component {
 
         switch (searchType) {
             case 'Flight number': {
-                if (this.validateInput(input, (flightNumber) => {
+                if (validateInput(input, (flightNumber) => {
                     return flightNumber > 0;
                 }, 'Flight number must be not less or equal to zero')) { return; }
 
-                fetch(this.apiUrl + `search/byFlightId/${searchValue}`, {
-                    method: "GET"
-                })
-                    .then(res => res)
-                    .then(
-                        (result) => {
-                            switch (result.status) {
-                                case 200: return result.json();
-                                case 404: this.showError(`Cannot find flight with number: ${searchValue}`); break;
-                                case 500: this.showError('Server error, please, contact administrator'); break;
+                this.requestManager.GET(this.apiUrl + `search/byFlightId/${searchValue}`,
+                    (response, status) => {
+                        switch (status) {
+                            case 200: {
+                                response = JSON.parse(response);
+                                this.addNewFlight(response, tbody);
+                                break;
                             }
-                        },
-                        (error) => {
-                            this.showError("Cannot search, reason: network error. Try to reload this page");
-                        })
-                    .then((result) => {
-                        if (result) {
-                            this.addNewFlight(result, tbody);
+                            case 404: showError(`Cannot find flight with number: ${searchValue}`); break;
+                            case 500: showError('Server error, please, contact administrator'); break;
                         }
-                    });
+                    },
+                    () => showError("Cannot search, reason: network error. Try to reload this page")
+                );
 
                 break;
             }
             case 'Arrival airport': {
-                if (this.validateInput(input, (arrivalAirport) => {
+                if (validateInput(input, (arrivalAirport) => {
                     return arrivalAirport.length <= 50;
                 }, "Arrival airport length must be not grater than 50")) { return; }
-        
-                fetch(this.apiUrl + `search/byFlightArrivalAirport/${searchValue}`, {
-                    method: "GET"
-                })
-                    .then(res => res)
-                    .then(
-                        (result) => {
-                            switch (result.status) {
-                                case 200: return result.json();
-                                case 500: this.showError('Server error, please, contact administrator'); break;
-                            }
-                        },
-                        (error) => {
-                            this.showError("Cannot search, reason: network error. Try to reload this page");
-                        })
-                    .then(result => {
-                        if (result.length == 0) {
-                            this.showError(`Cannot find flight with arrival airport: ${searchValue}`);
-                        }
 
-                        result.map(f => {
-                            this.addNewFlight(f, tbody);
-                        });
-                    });
+                this.requestManager.GET(this.apiUrl + `search/byFlightArrivalAirport/${searchValue}`,
+                    (response, status) => {
+                        switch (status) {
+                            case 200: {
+                                response = JSON.parse(response);
+
+                                if (response.length == 0) {
+                                    showError(`Cannot find flight with arrival airport: ${searchValue}`);
+                                    break;
+                                }
+        
+                                response.map(f => {
+                                    this.addNewFlight(f, tbody);
+                                });
+
+                                break;
+                            }
+                            case 500: showError('Server error, please, contact administrator'); break;
+                        }
+                    },
+                    () => showError("Cannot search, reason: network error. Try to reload this page")
+                );
 
                 break;
             }
             case 'Departure airport': {
-                if (this.validateInput(input, (departureAirport) => {
+                if (validateInput(input, (departureAirport) => {
                     return departureAirport.length <= 50;
                 }, "Departure airport length must be not grater than 50")) { return; }
 
-                fetch(this.apiUrl + `search/byFlightDepartureAirport/${searchValue}`, {
-                    method: "GET"
-                })
-                    .then(res => res)
-                    .then(
-                        (result) => {
-                            switch (result.status) {
-                                case 200: return result.json();
-                                case 500: this.showError('Server error, please, contact administrator'); break;
-                            }
-                        },
-                        (error) => {
-                            this.showError("Cannot search, reason: network error. Try to reload this page");
-                        })
-                    .then((result) => {
-                        if (result.length == 0) {
-                            this.showError(`Cannot find flight with departure airport: ${searchValue}`);
-                        }
+                this.requestManager.GET(this.apiUrl + `search/byFlightDepartureAirport/${searchValue}`,
+                    (response, status) => {
+                        switch (status) {
+                            case 200: {
+                                response = JSON.parse(response);
 
-                        result.map(f => {
-                            this.addNewFlight(f, tbody);
-                        });
-                    });
+                                if (response.length == 0) {
+                                    showError(`Cannot find flight with departure airport: ${searchValue}`);
+                                }
+        
+                                response.map(f => {
+                                    this.addNewFlight(f, tbody);
+                                });
+
+                                break;
+                            }
+                            case 500: showError('Server error, please, contact administrator'); break;
+                        }
+                    },
+                    () => showError("Cannot search, reason: network error. Try to reload this page")
+                );
 
                 break;
             }
@@ -620,76 +515,16 @@ class Flights extends React.Component {
         });
     }
 
-    showError(message) {
-        let container = document.querySelector('.toast-container');
-
-        let toast = document.createElement('div');
-        let flexContainer = document.createElement('div');
-        let toasBody = document.createElement('div');
-        let closeButton = document.createElement('button');
-
-        toast.classList.add('toast', 'align-items-center', 'fade', 'text-bg-danger', 'show');
-        toast.style.marginBottom = '0.3rem';
-
-        flexContainer.classList.add('d-flex');
-        toasBody.classList.add('toast-body');
-        closeButton.classList.add('btn-close', 'btn-close-white', 'me-2', 'm-auto');
-
-        toasBody.innerText = message;
-
-        flexContainer.appendChild(toasBody);
-        flexContainer.appendChild(closeButton);
-        toast.appendChild(flexContainer);
-        container.appendChild(toast);
-
-        let onCloseClick = () => {
-            toast.remove();
-        }
-
-        closeButton.addEventListener('click', onCloseClick);
-
-        setTimeout(() => onCloseClick(), 10000);
-    }
-
     validateInputOnChange(e) {
         if (e.target.id == 'birthday-input') {
-            this.validateInput(e.target, (birthday) => {
+            validateInput(e.target, (birthday) => {
                 return Date.now() >= Date.parse(birthday);
             }, 'Birthday must be not day in the future');
 
             return;
         }
 
-        this.validateInput(e.target);
-    }
-
-    validateInput(input, validateCallback, validateMessage) {
-        let error = false;
-
-        if (!input.value) {
-            input.classList.remove('is-valid');
-            input.classList.add('is-invalid');
-
-            this.showError(`Field ${input.placeholder.toLowerCase()} must be not empty`)
-
-            error = true;
-        }
-
-        if (!error && validateCallback && !validateCallback(input.value)) {
-            input.classList.remove('is-valid');
-            input.classList.add('is-invalid');
-
-            this.showError(`${validateMessage}`)
-
-            error = true;
-        }
-
-        if (!error) {
-            input.classList.remove('is-invalid');
-            input.classList.add('is-valid');
-        }
-
-        return error;
+        validateInput(e.target);
     }
 
     selectedStatus(e) {
@@ -763,38 +598,38 @@ class Flights extends React.Component {
             }
         }
 
-        setError(this.validateInput(arrivalAirportInput));
-        setError(this.validateInput(departureAirportInput));
-        setError(arrivalAirportInput.value == departureAirportInput.value, () => this.showError("Arrival and departure airports can't be the same"));
-        setError(this.validateInput(terminalInput, (terminal) => {return terminal.length == 1}, 'Terminal could have only one character'));
+        setError(validateInput(arrivalAirportInput));
+        setError(validateInput(departureAirportInput));
+        setError(arrivalAirportInput.value == departureAirportInput.value, () => showError("Arrival and departure airports can't be the same"));
+        setError(validateInput(terminalInput, (terminal) => {return terminal.length == 1}, 'Terminal could have only one character'));
 
         if (this.invokedByAddNewFlight) {
-            setError(this.validateInput(arrivalDateInput));
-            setError(this.validateInput(departureDateInput));
+            setError(validateInput(arrivalDateInput));
+            setError(validateInput(departureDateInput));
         }
 
         if (!this.invokedByAddNewFlight && arrivalDateInput.value && departureDateInput.value) {
             let arrivalDate = new Date(arrivalDateInput.value);
             let departureDate = new Date(departureDateInput.value);
 
-            setError(arrivalDate <= departureDate, () => this.showError("Departure date must be less than arrival and not equal"));
+            setError(arrivalDate <= departureDate, () => showError("Departure date must be less than arrival and not equal"));
         }
 
         if (this.invokedByAddNewFlight) {
             let arrivalDate = new Date(arrivalDateInput.value);
             let departureDate = new Date(departureDateInput.value);
 
-            setError(arrivalDate <= departureDate, () => this.showError("Departure date must be less than arrival and not equal"));
+            setError(arrivalDate <= departureDate, () => showError("Departure date must be less than arrival and not equal"));
         }
         
-        setError(this.validateInput(economyPriceInput, (price) => {return price >= 100 && price <= 100000}, "Economy ticket price must be in rage: from 100$ to 100000$"));
-        setError(this.validateInput(businessPriceInput, (price) => {return price >= 100 && price <= 100000}, "Business ticket price must be in rage: from 100$ to 100000$"));
+        setError(validateInput(economyPriceInput, (price) => {return price >= 100 && price <= 100000}, "Economy ticket price must be in rage: from 100$ to 100000$"));
+        setError(validateInput(businessPriceInput, (price) => {return price >= 100 && price <= 100000}, "Business ticket price must be in rage: from 100$ to 100000$"));
 
         if (statusId == '') {
             statusInput.classList.remove('is-valid');
             statusInput.classList.add('is-invalid');
 
-            this.showError('Status must be selected');
+            showError('Status must be selected');
 
             setError(true);
         }
@@ -836,7 +671,7 @@ class Flights extends React.Component {
 
             statusInput.setAttribute('status-id', '');
 
-            this.clearInputs([idInput, arrivalAirportInput, departureAirportInput, terminalInput, arrivalDateInput, departureDateInput, economyPriceInput, businessPriceInput]);
+            clearInputs([idInput, arrivalAirportInput, departureAirportInput, terminalInput, arrivalDateInput, departureDateInput, economyPriceInput, businessPriceInput]);
         }
 
         this.invokedByAddNewFlight = false;
@@ -860,7 +695,7 @@ class Flights extends React.Component {
 
         statusInput.setAttribute('status-id', '');
 
-        this.clearInputs([idInput, arrivalAirportInput, departureAirportInput, terminalInput, arrivalDateInput, departureDateInput, economyPriceInput, businessPriceInput]);
+        clearInputs([idInput, arrivalAirportInput, departureAirportInput, terminalInput, arrivalDateInput, departureDateInput, economyPriceInput, businessPriceInput]);
     }
 
     convertDateToISO(inputDate) {
@@ -900,12 +735,31 @@ class Flights extends React.Component {
             return;
         }
 
-        fetch(this.apiUrl, {
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json'
+        this.requestManager.PUT(this.apiUrl,
+            (response, reqStatus) => {
+                switch (reqStatus) {
+                    case 200: {
+                        let tr = document.getElementById(`flight-${id}`);
+                        let tds = tr.children;
+
+                        this.setFlightByTDs(tds, id, departureAirport, arrivalAirport, terminal, departureTime, arrivalTime, economyPrice, businessPrice, status);
+
+                        if (this.isInvokedBySearch) {
+                            tr = document.querySelectorAll(`#flight-${id}`)[1];
+                            tds = tr.children;
+
+                            this.setFlightByTDs(tds, id, departureAirport, arrivalAirport, terminal, departureTime, arrivalTime, economyPrice, businessPrice, status);
+                        }
+
+                        break;
+                    }
+                    case 404: showError(`Flight with id: ${id} cannot be found`); break;
+                    case 500: showError("Server error, try again"); break;
+                }
             },
-            body: JSON.stringify({
+            () => showError("Cannot edit row, reason: network error. Try to reload this page"),
+            true,
+            JSON.stringify({
                 id,
                 arrivalAirportName: arrivalAirport,
                 departureAirportName: departureAirport,
@@ -916,33 +770,7 @@ class Flights extends React.Component {
                 businessPrice,
                 status
             })
-        })
-            .then(res => res)
-            .then(
-                (result) => {
-                    switch (result.status) {
-                        case 200: {
-                            let tr = document.getElementById(`flight-${id}`);
-                            let tds = tr.children;
-
-                            this.setFlightByTDs(tds, id, departureAirport, arrivalAirport, terminal, departureTime, arrivalTime, economyPrice, businessPrice, status);
-
-                            if (this.isInvokedBySearch) {
-                                tr = document.querySelectorAll(`#flight-${id}`)[1];
-                                tds = tr.children;
-
-                                this.setFlightByTDs(tds, id, departureAirport, arrivalAirport, terminal, departureTime, arrivalTime, economyPrice, businessPrice, status);
-                            }
-
-                            break;
-                        }
-                        case 404: this.showError(`Flight with id: ${id} cannot be found`); break;
-                        case 500: this.showError("Server error, try again"); break;
-                    }
-                },
-                (error) => {
-                    this.showError("Cannot edit row, reason: network error. Try to reload this page");
-                });
+        );
     }
     addNewModalHandler(e) {
         this.invokedByAddNewFlight = true;
@@ -957,7 +785,7 @@ class Flights extends React.Component {
         this.totalFlightsCount += 1;
 
         if (this.currentPageItems == 6) {
-            this.createPagination();
+            this.createPagination(this.totalFlightsCount, this.pageNumber, 'flights');
         } else {
             tr = this.addNewFlight({
                 id: undefined,
@@ -972,12 +800,26 @@ class Flights extends React.Component {
             });
         }
 
-        fetch(this.apiUrl, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
+        this.requestManager.POST(this.apiUrl,
+            (response, reqStatus) => {
+                switch (reqStatus) {
+                    case 200: {
+                        response = JSON.parse(response);
+                        tr.id = `flight-${response.id}`;
+
+                        let tdId = tr.children[0];
+                        tdId.innerText = response.id;
+                        break;
+                    }
+                    case 500: showError("Server error, try again"); break;
+                }
             },
-            body: JSON.stringify({
+            () => {
+                tr.remove();
+                showError('Cannot add row, reason: network error. Try to reload this page')
+            },
+            true,
+            JSON.stringify({
                 id,
                 arrivalAirportName: arrivalAirport,
                 departureAirportName: departureAirport,
@@ -988,20 +830,7 @@ class Flights extends React.Component {
                 businessPrice,
                 status
             })
-        })
-            .then(res => {
-                switch (res.status) {
-                    case 200: return res.json();
-                    case 500: this.showError("Server error, try again"); break;
-                }
-            }, error => {tr.remove(); this.showError('Cannot add row, reason: network error. Try to reload this page')})
-            .then(result => {
-                tr.id = `flight-${result.id}`;
-
-                let tdId = tr.children[0];
-                tdId.innerText = result.id;
-
-            });
+        );
     }
 
     setFlightByTDs(tds, id, departureAirport, arrivalAirport, terminal, departureTime, arrivalTime, economyPrice, businessPrice, status) {
@@ -1033,20 +862,6 @@ class Flights extends React.Component {
         this.modalCloseHandler(e);
     }
 
-    clearInputs(inputs) {
-        inputs.forEach(input => {
-            this.clearInput(input);
-        });
-    }
-    clearInput(input) {
-        if (input) {
-            input.value = '';
-
-            input.classList.remove('is-valid');
-            input.classList.remove('is-invalid');
-        }
-    }
-
     deleteRow(e) {
         let tr = e.target.closest("tr");
         let id = tr.children[0].innerText;
@@ -1066,57 +881,53 @@ class Flights extends React.Component {
         
         tr.style.display = 'none';
 
-        fetch(this.apiUrl, {
-            method: "DELETE",
-            headers: {
-                'Content-Type': 'application/json'
+        this.requestManager.DELETE(this.apiUrl,
+            (response, status) => {
+                switch (status) {
+                    case 200: {
+                        tr.remove();
+                        this.currentPageItems -= 1;
+                        
+                        if (this.isInvokedBySearch) {
+                            tr2.remove();
+                        }
+
+                        break;
+                    }
+                    case 404: {
+                        tr.style.display = '';
+
+                        if (this.isInvokedBySearch) {
+                            tr2.style.display = '';
+                        }
+
+                        showError(`Flight with id: ${id} cannot be found`);
+                        break;
+                    }
+                    case 500: {
+                        tr.style.display = '';
+
+                        if (this.isInvokedBySearch) {
+                            tr2.style.display = '';
+                        }
+
+                        showError("Server error, try again"); 
+                        break;
+                    }
+                }
             },
-            body: id
-        })
-            .then(res => res)
-            .then(
-                (result) => {
-                    switch (result.status) {
-                        case 200: {
-                            tr.remove();
-                            this.currentPageItems -= 1;
-                            
-                            if (this.isInvokedBySearch) {
-                                tr2.remove();
-                            }
+            () => {
+                tr.style.display = '';
 
-                            break;
-                        }
-                        case 404: {
-                            tr.style.display = '';
+                if (this.isInvokedBySearch) {
+                    tr2.style.display = '';
+                }
 
-                            if (this.isInvokedBySearch) {
-                                tr2.style.display = '';
-                            }
-
-                            this.showError(`Flight with id: ${id} cannot be found`);
-                            break;
-                        }
-                        case 500: {
-                            tr.style.display = '';
-
-                            if (this.isInvokedBySearch) {
-                                tr2.style.display = '';
-                            }
-
-                            this.showError("Server error, try again"); 
-                            break;}
-                    }
-                },
-                (error) => {
-                    tr.style.display = '';
-
-                    if (this.isInvokedBySearch) {
-                        tr2.style.display = '';
-                    }
-
-                    this.showError("Cannot delete row, reason: network error. Try to reload this page");
-                });
+                showError("Cannot delete row, reason: network error. Try to reload this page");
+            },
+            true,
+            id
+        );
     }
 }
 
