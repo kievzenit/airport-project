@@ -1,5 +1,5 @@
 ﻿using AirportProject.Domain.DTOs;
-using AirportProject.Infrastructure.Persistent.Abstract;
+using AirportProject.Application.Abstract;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;

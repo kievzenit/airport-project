@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace AirportProject.Infrastructure.Persistent.Abstract
+namespace AirportProject.Application.Abstract
 {
     public interface IAirportRepository
     {

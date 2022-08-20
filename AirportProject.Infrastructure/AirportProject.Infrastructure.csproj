@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AirportProject.Application\AirportProject.Application.csproj" />
     <ProjectReference Include="..\AirportProject.Domain\AirportProject.Domain.csproj" />
   </ItemGroup>
 

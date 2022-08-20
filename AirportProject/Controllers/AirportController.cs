@@ -1,6 +1,6 @@
 ﻿using AirportProject.Domain.DTOs;
 using AirportProject.Domain.DTOs.Validation;
-using AirportProject.Infrastructure.Persistent.Abstract;
+using AirportProject.Application.Abstract;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;

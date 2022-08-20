@@ -1,6 +1,6 @@
 ﻿using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
-using AirportProject.Infrastructure.Persistent.Abstract;
+using AirportProject.Application.Abstract;
 using AirportProject.Infrastructure.Persistent.Casting;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;

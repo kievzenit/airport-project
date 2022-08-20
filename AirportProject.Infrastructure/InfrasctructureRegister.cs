@@ -1,4 +1,4 @@
-﻿using AirportProject.Infrastructure.Persistent.Abstract;
+﻿using AirportProject.Application.Abstract;
 using AirportProject.Infrastructure.Persistent.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
