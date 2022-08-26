@@ -1,79 +1,93 @@
-﻿using AirportProject.Domain.DTOs;
-using AirportProject.Domain.DTOs.Validation;
-using AirportProject.Application.Abstract;
+﻿using AirportProject.Application.Airports.Command.DeleteAirport;
+using AirportProject.Application.Airports.Command.UpdateAirport;
+using AirportProject.Application.Airports.Commands.CreateAirport;
+using AirportProject.Application.Airports.Queries.GetAirportsWithPagination;
+using AirportProject.Application.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AirportProject.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class AirportController : ControllerBase
+    public class AirportController : ApiController
     {
-        const int PAGESIZE = 6;
-        private readonly IAirportRepository repository;
-
-        public AirportController(IAirportRepository repository)
-        {
-            this.repository = repository;
-        }
-
         [HttpGet("{page}")]
-        public async Task<PageResultDTO<AirportDTO>> Page(int page)
+        public async Task<IActionResult> Page(int page)
         {
-            var airportDTOs = await repository.GetRange(page, PAGESIZE);
-            var totalCount = await repository.GetTotalCount();
+            if (page <= 0)
+            {
+                return BadRequest(new ArgumentException("Page number must be not equal or less than zero").Message);
+            }
 
-            return new PageResultDTO<AirportDTO>(airportDTOs, totalCount);
+            var response = await this.Mediator.Send(new GetAirportsWithPaginationQuery(page));
+
+            return Ok(response);
         }
 
         [HttpPost]
-        public async Task<AirportDTO> Create([FromBody] AirportDTO airportDTO)
+        public async Task<IActionResult> Create([FromBody] CreateAirportCommand createAirportCommand)
         {
-            if (!airportDTO.IsValid())
+            try
             {
-                this.Response.StatusCode = 400;
-                return default;
-            }
+                var response = await this.Mediator.Send(createAirportCommand);
 
-            return await repository.Create(airportDTO);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpPut]
-        public async Task Update([FromBody] AirportDTO airportDTO)
+        public async Task<IActionResult> Update([FromBody] UpdateAirportCommand updateAirportCommand)
         {
-            if (airportDTO.Id <= 0 || !airportDTO.IsValid())
+            try
             {
-                this.Response.StatusCode = 400;
-                return;
+                await this.Mediator.Send(updateAirportCommand);
+
+                return Ok();
             }
-
-            var success = await repository.Update(airportDTO);
-
-            if (!success)
+            catch (ArgumentException ex)
             {
-                this.Response.StatusCode = 404;
-                return;
+                return BadRequest(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
             }
         }
 
         [HttpDelete]
-        public async Task Delete([FromBody] int id)
+        public async Task<IActionResult> Delete([FromBody] int id)
         {
-            if (id <= 0)
+            try
             {
-                this.Response.StatusCode = 400;
-                return;
+                await this.Mediator.Send(new DeleteAirportCommand(id));
+
+                return Ok();
             }
-
-            var success = await repository.Delete(id);
-
-            if (!success)
+            catch (ArgumentException ex)
             {
-                this.Response.StatusCode = 404;
-                return;
+                return BadRequest(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
             }
         }
     }
