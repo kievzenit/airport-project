@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AirportProject.Controllers
 {
-    public class ApiController : ControllerBase
+    public class BaseApiController : ControllerBase
     {
         private ISender mediator = null!;
         protected ISender Mediator =>

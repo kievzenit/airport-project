@@ -11,7 +11,7 @@ namespace AirportProject.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class AirportController : ApiController
+    public class AirportController : BaseApiController
     {
         [HttpGet("{page}")]
         public async Task<IActionResult> Page(int page)

@@ -18,7 +18,7 @@ namespace AirportProject.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class FlightController : ApiController
+    public class FlightController : BaseApiController
     {
         private readonly IFlightRepository repository = null;
 
