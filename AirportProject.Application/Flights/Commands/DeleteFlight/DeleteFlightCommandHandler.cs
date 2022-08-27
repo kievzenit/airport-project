@@ -26,7 +26,7 @@ namespace AirportProject.Application.Flights.Commands.DeleteFlight
                 throw new ArgumentException("Flight id must be not equal or less than zero");
             }
 
-            var success = await this.repository.Delete(id);
+            var success = await this.repository.Delete(request.Id);
 
             if (!success)
             {
