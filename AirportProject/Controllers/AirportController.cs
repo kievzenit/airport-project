@@ -16,14 +16,20 @@ namespace AirportProject.Controllers
         [HttpGet("{page}")]
         public async Task<IActionResult> Page(int page)
         {
-            if (page <= 0)
+            try
             {
-                return BadRequest(new ArgumentException("Page number must be not equal or less than zero").Message);
+                var response = await this.Mediator.Send(new GetAirportsWithPaginationQuery(page));
+
+                return Ok(response);
             }
-
-            var response = await this.Mediator.Send(new GetAirportsWithPaginationQuery(page));
-
-            return Ok(response);
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpPost]
