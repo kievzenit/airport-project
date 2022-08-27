@@ -1,5 +1,4 @@
-﻿using AirportProject.Application.Abstract;
-using AirportProject.Application.Exceptions;
+﻿using AirportProject.Application.Exceptions;
 
 using AirportProject.Application.Flights.Commands.CreateFlight;
 using AirportProject.Application.Flights.Commands.DeleteFlight;
@@ -20,8 +19,6 @@ namespace AirportProject.Controllers
     [ApiController]
     public class FlightController : BaseApiController
     {
-        private readonly IFlightRepository repository = null;
-
         [HttpGet("{page}")]
         public async Task<IActionResult> GetPage(int page)
         {
