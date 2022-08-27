@@ -1,124 +1,170 @@
-﻿using AirportProject.Domain.DTOs;
-using AirportProject.Domain.DTOs.Validation;
-using AirportProject.Application.Abstract;
+﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Exceptions;
+
+using AirportProject.Application.Flights.Commands.CreateFlight;
+using AirportProject.Application.Flights.Commands.DeleteFlight;
+using AirportProject.Application.Flights.Commands.UpdateFlight;
+
+using AirportProject.Application.Flights.Queries.GetFlightById;
+using AirportProject.Application.Flights.Queries.GetFlightsByArrivalAirport;
+using AirportProject.Application.Flights.Queries.GetFlightsByDepartureAirport;
+using AirportProject.Application.Flights.Queries.GetFlightsWithPagination;
+
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 
 namespace AirportProject.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class FlightController : ControllerBase
+    public class FlightController : ApiController
     {
-        const int PAGESIZE = 6;
-        private readonly IFlightRepository repository;
-
-        public FlightController(IFlightRepository repository)
-        {
-            this.repository = repository;
-        }
-
+        private readonly IFlightRepository repository = null;
 
         [HttpGet("{page}")]
-        public async Task<PageResultDTO<FlightDTO>> GetPage(int page)
+        public async Task<IActionResult> GetPage(int page)
         {
-            var flightDTOs = await this.repository.GetRange(page, PAGESIZE);
-            var totalCount = await this.repository.GetTotalCount();
+            try
+            {
+                var response = await this.Mediator.Send(new GetFlightsWithPaginationQuery(page));
 
-            return new PageResultDTO<FlightDTO>(flightDTOs, totalCount);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpPost]
-        public async Task<FlightDTO> Create([FromBody] FlightDTO flightDTO)
+        public async Task<IActionResult> Create([FromBody] CreateFlightCommand createFlightCommand)
         {
-            if (!flightDTO.IsValid())
+            try
             {
-                this.Response.StatusCode = 400;
-                return default;
-            }
+                var response = await this.Mediator.Send(createFlightCommand);
 
-            return await this.repository.Create(flightDTO);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpPut]
-        public async Task Update([FromBody] FlightDTO flightDTO)
+        public async Task<IActionResult> Update([FromBody] UpdateFlightCommand updateFlightCommand)
         {
-            if (flightDTO.Id <= 0 || !flightDTO.IsValid())
+            try
             {
-                this.Response.StatusCode = 400;
-                return;
+                var response = await this.Mediator.Send(updateFlightCommand);
+
+                return Ok(response);
             }
-
-            var success = await this.repository.Update(flightDTO);
-
-            if (!success)
+            catch (ArgumentException ex)
             {
-                this.Response.StatusCode = 404;
-                return;
+                return BadRequest(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
             }
         }
 
         [HttpDelete]
-        public async Task Delete([FromBody] int id)
+        public async Task<IActionResult> Delete([FromBody] int id)
         {
-            if (id <= 0)
+            try
             {
-                this.Response.StatusCode = 400;
-                return;
+                var response = await this.Mediator.Send(new DeleteFlightCommand(id));
+
+                return Ok(response);
             }
-
-            var success = await this.repository.Delete(id);
-
-            if (!success)
+            catch (ArgumentException ex)
             {
-                this.Response.StatusCode = 404;
-                return;
+                return BadRequest(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
             }
         }
 
-        [HttpGet("search/byFlightId/{flightId}")]
-        public async Task<FlightDTO> SearchByFlightId(int flightId)
+        [HttpGet("search/byId/{flightId}")]
+        public async Task<IActionResult> SearchByFlightId(int flightId)
         {
-            if (flightId <= 0)
+            try
             {
-                this.Response.StatusCode = 400;
-                return default;
+                var response = await this.Mediator.Send(new GetFlightByIdQuery(flightId));
+
+                return Ok(response);
             }
-
-            var flightDTO = await this.repository.SearchByFlightNumber(flightId);
-
-            if (flightDTO == null)
+            catch (ArgumentException ex)
             {
-                this.Response.StatusCode = 404;
-                return default;
+                return BadRequest(ex.Message);
             }
-
-            return flightDTO;
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
-        [HttpGet("search/byFlightArrivalAirport/{airportName}")]
-        public async Task<IEnumerable<FlightDTO>> SearchByFlightArrivalAirport(string airportName)
+        [HttpGet("search/byArrivalAirport/{airportName}")]
+        public async Task<IActionResult> SearchByFlightArrivalAirport(string airportName)
         {
-            if (airportName == null || airportName.Length > 50)
+            try
             {
-                this.Response.StatusCode = 400;
-                return default;
-            }
+                var response = await this.Mediator.Send(new GetFlightsByArrivalAirportQuery(airportName));
 
-            return await this.repository.SearchByFlightArrivalAirport(airportName);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
-        [HttpGet("search/byFlightDepartureAirport/{airportName}")]
-        public async Task<IEnumerable<FlightDTO>> SearchByFlightDepartureAirport(string airportName)
+        [HttpGet("search/byDepartureAirport/{airportName}")]
+        public async Task<IActionResult> SearchByFlightDepartureAirport(string airportName)
         {
-            if (airportName == null || airportName.Length > 50)
+            try
             {
-                this.Response.StatusCode = 400;
-                return default;
-            }
+                var response = await this.Mediator.Send(new GetFlightsByDepartureAirportQuery(airportName));
 
-            return await this.repository.SearchByFlightDepartureAirport(airportName);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
     }
 }
