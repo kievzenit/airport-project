@@ -15,8 +15,6 @@ using System.Threading.Tasks;
 
 namespace AirportProject.Controllers
 {
-    [Route("[controller]")]
-    [ApiController]
     public class FlightController : BaseApiController
     {
         [HttpGet("{page}")]

@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 
 namespace AirportProject.Controllers
 {
-    [Route("[controller]")]
-    [ApiController]
     public class AirportController : BaseApiController
     {
         [HttpGet("{page}")]
