@@ -1,161 +1,213 @@
-﻿using AirportProject.Domain.DTOs;
-using AirportProject.Domain.DTOs.Validation;
-using AirportProject.Application.Abstract;
+﻿using AirportProject.Application.Exceptions;
+
+using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
+using AirportProject.Application.Passengers.Queries.GetPassengerByPassport;
+using AirportProject.Application.Passengers.Queries.GetPassengersByFirstname;
+using AirportProject.Application.Passengers.Queries.GetPassengersByLastname;
+
+using AirportProject.Application.Passengers.Commands.AddTicketToPassenger;
+using AirportProject.Application.Passengers.Commands.CreatePassenger;
+using AirportProject.Application.Passengers.Commands.DeletePassenger;
+using AirportProject.Application.Passengers.Commands.RemoveTicketFromPassenger;
+using AirportProject.Application.Passengers.Commands.UpdatePassenger;
+
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using System;
 using System.Threading.Tasks;
 
 namespace AirportProject.Controllers
 {
-    [Route("[controller]")]
-    [ApiController]
-    public class PassengerController : ControllerBase
+    public class PassengerController : BaseApiController
     {
-        const int PAGESIZE = 6;
-        private readonly IPassengerRepository repository;
-
-        public PassengerController(IPassengerRepository repository)
-        {
-            this.repository = repository;
-        }
-
-
         [HttpGet("{page}")]
-        public async Task<PageResultDTO<PassengerDTO>> GetPage(int page)
+        public async Task<IActionResult> GetPage(int page)
         {
-            var passengerDTOs = await this.repository.GetRange(page, PAGESIZE);
-            var totalCount = await this.repository.GetTotalCount();
+            try
+            {
+                var response = await this.Mediator.Send(new GetPassengersWithPaginationQuery(page));
 
-            return new PageResultDTO<PassengerDTO>(passengerDTOs, totalCount);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpPost]
-        public async Task<PassengerDTO> Create([FromBody] PassengerDTO passengerDTO)
+        public async Task<IActionResult> Create([FromBody] CreatePassengerCommand createPassengerCommand)
         {
-            if (!passengerDTO.IsValid())
+            try
             {
-                this.Response.StatusCode = 400;
-                return default;
-            }
+                var response = await this.Mediator.Send(createPassengerCommand);
 
-            return await this.repository.Create(passengerDTO);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpPut]
-        public async Task Update([FromBody] PassengerDTO passengerDTO)
+        public async Task<IActionResult> Update([FromBody] UpdatePassengerCommand updatePassengerCommand)
         {
-            if (passengerDTO.Id <= 0 || !passengerDTO.IsValid(false))
+            try
             {
-                this.Response.StatusCode = 400;
-                return;
+                await this.Mediator.Send(updatePassengerCommand);
+
+                return Ok();
             }
-
-            var success = await this.repository.Update(passengerDTO);
-
-            if (!success)
+            catch (ArgumentException ex)
             {
-                this.Response.StatusCode = 404;
-                return;
+                return BadRequest(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
             }
         }
 
         [HttpDelete]
-        public async Task Delete([FromBody] int id)
+        public async Task<IActionResult> Delete([FromBody] int id)
         {
-            if (id <= 0)
+            try
             {
-                this.Response.StatusCode = 400;
-                return;
+                await this.Mediator.Send(new DeletePassengerCommand(id));
+
+                return Ok();
             }
-
-            var success = await this.repository.Delete(id);
-
-            if (!success)
+            catch (ArgumentException ex)
             {
-                this.Response.StatusCode = 404;
-                return;
+                return BadRequest(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
             }
         }
 
         [HttpPut("ticket")]
-        public async Task AddTicket(int passengerId, int ticketId)
+        public async Task<IActionResult> AddTicket(int passengerId, int ticketId)
         {
-            if (ticketId <= 0 && passengerId <= 0)
+            try
             {
-                this.Response.StatusCode = 400;
-                return;
+                await this.Mediator.Send(new AddTicketToPassengerCommand(passengerId, ticketId));
+
+                return Ok();
             }
-
-            var success = await this.repository.AddTicket(passengerId, ticketId);
-
-            if (!success)
+            catch (ArgumentException ex)
             {
-                this.Response.StatusCode = 404;
-                return;
+                return BadRequest(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
             }
         }
 
         [HttpDelete("ticket")]
-        public async Task DeleteTicket(int passengerId, int ticketId)
+        public async Task<IActionResult> DeleteTicket(int passengerId, int ticketId)
         {
-            if (ticketId <= 0 && passengerId <= 0)
+            try
             {
-                this.Response.StatusCode = 400;
-                return;
+                await this.Mediator.Send(new RemoveTicketFromPassengerCommand(passengerId, ticketId));
+
+                return Ok();
             }
-
-            var success = await this.repository.DeleteTicket(passengerId, ticketId);
-
-            if (!success)
+            catch (ArgumentException ex)
             {
-                this.Response.StatusCode = 404;
-                return;
+                return BadRequest(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
             }
         }
 
         [HttpGet("search/byPassport/{passport}")]
-        public async Task<PassengerDTO> SearchByPassport(string passport)
+        public async Task<IActionResult> SearchByPassport(string passport)
         {
-            if (passport == null || passport.Length != 8 || !Regex.IsMatch(passport, "^[a-z]{2}\\d{6}$"))
+            try
             {
-                this.Response.StatusCode = 400;
-                return default;
+                var response = await this.Mediator.Send(new GetPassengerByPassportQuery(passport));
+
+                return Ok(response);
             }
-
-            var passengerDTO = await this.repository.SearchByPassport(passport);
-
-            if (passengerDTO == null)
+            catch (ArgumentException ex)
             {
-                this.Response.StatusCode = 404;
-                return default;
+                return BadRequest(ex.Message);
             }
-
-            return passengerDTO;
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpGet("search/byFirtsname/{firstname}")]
-        public async Task<IEnumerable<PassengerDTO>> SearchByFirstname(string firstname)
+        public async Task<IActionResult> SearchByFirstname(string firstname)
         {
-            if (firstname == null || firstname.Length > 50 || firstname.Length == 0)
+            try
             {
-                this.Response.StatusCode = 400;
-                return default;
-            }
+                var response = await this.Mediator.Send(new GetPassengersByFirstnameQuery(firstname));
 
-            return await this.repository.SearchByFirstname(firstname);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
 
         [HttpGet("search/byLastname/{lastname}")]
-        public async Task<IEnumerable<PassengerDTO>> SearchByLastname(string lastname)
+        public async Task<IActionResult> SearchByLastname(string lastname)
         {
-            if (lastname == null || lastname.Length > 50 || lastname.Length == 0)
+            try
             {
-                this.Response.StatusCode = 400;
-                return default;
-            }
+                var response = await this.Mediator.Send(new GetPassengersByLastnameQuery(lastname));
 
-            return await this.repository.SearchByLastname(lastname);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
         }
     }
 }
