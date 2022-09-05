@@ -13,11 +13,12 @@ namespace AirportProject.Controllers
     public class AirportController : BaseApiController
     {
         [HttpGet("{page}")]
-        public async Task<IActionResult> Page(int page)
+        public async Task<IActionResult> Page(int page, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await this.Mediator.Send(new GetAirportsWithPaginationQuery(page));
+                var response = await this.Mediator.Send(
+                    new GetAirportsWithPaginationQuery(page), cancellationToken);
 
                 return Ok(response);
             }

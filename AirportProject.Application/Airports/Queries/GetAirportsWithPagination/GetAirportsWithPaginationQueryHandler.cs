@@ -2,6 +2,7 @@
 using AirportProject.Domain.DTOs;
 using MediatR;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,8 +27,24 @@ namespace AirportProject.Application.Airports.Queries.GetAirportsWithPagination
                 throw new ArgumentException("Page number must be not equal or less than zero");
             }
 
-            var airportDTOs = await this.repository.GetRange(request.PageNumber, request.PageSize);
-            var totalCount = await this.repository.GetTotalCount();
+            var airports = await this.repository.GetRange(
+                request.PageNumber, request.PageSize, cancellationToken);
+            var totalCount = await this.repository.GetTotalCount(cancellationToken);
+
+            var airportDTOs = new List<AirportDTO>();
+
+            foreach (var airport in airports)
+            {
+                var airportDTO = new AirportDTO
+                {
+                    Id = airport.Id,
+                    Name = airport.Name,
+                    Country = airport.Country,
+                    City = airport.City
+                };
+
+                airportDTOs.Add(airportDTO);
+            }
 
             return new PageResultDTO<AirportDTO>(airportDTOs, totalCount);
         }

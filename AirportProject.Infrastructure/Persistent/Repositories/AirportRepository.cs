@@ -71,21 +71,15 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return true;
         }
 
-        public async Task<ICollection<AirportDTO>> GetAll()
-        {
-            var airports = await this.context.Airports.ToListAsync();
-
-            return await airports.ToAirportDTOs();
-        }
-
-        public async Task<ICollection<AirportDTO>> GetRange(int offset, int count)
+        public async Task<ICollection<Airport>> GetRange(
+            int offset, int count, CancellationToken cancellationToken)
         {
             var airports = await this.context.Airports
                 .Skip((offset - 1) * count)
                 .Take(count)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
-            return await airports.ToAirportDTOs();
+            return airports;
         }
 
         public async Task<bool> Update(AirportDTO airportDTO)
@@ -105,9 +99,9 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return true;
         }
 
-        public async Task<int> GetTotalCount()
+        public async Task<int> GetTotalCount(CancellationToken cancellationToken)
         {
-            var airports = await this.context.Airports.ToListAsync();
+            var airports = await this.context.Airports.ToListAsync(cancellationToken);
 
             return airports.Count;
         }

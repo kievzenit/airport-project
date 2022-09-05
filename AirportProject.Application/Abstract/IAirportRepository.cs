@@ -11,13 +11,13 @@ namespace AirportProject.Application.Abstract
     {
         public Task<Airport> Create(
             CreateAirportCommand createAirportCommand, CancellationToken cancellationToken);
-        public Task<ICollection<AirportDTO>> GetAll();
-        public Task<ICollection<AirportDTO>> GetRange(int offset, int count);
+        public Task<ICollection<Airport>> GetRange(
+            int offset, int count, CancellationToken cancellationToken);
         public Task<bool> Update(AirportDTO airportDTO);
         public Task<bool> Delete(int id);
 
         public Task<bool> DoesAirportExists(string name, CancellationToken cancellationToken);
 
-        public Task<int> GetTotalCount();
+        public Task<int> GetTotalCount(CancellationToken cancellationToken);
     }
 }
