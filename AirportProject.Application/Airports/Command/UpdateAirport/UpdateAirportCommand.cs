@@ -1,7 +1,7 @@
 ﻿using AirportProject.Domain.DTOs;
 using MediatR;
 
-namespace AirportProject.Application.Airports.Command.UpdateAirport
+namespace AirportProject.Application.Airports.Commands.UpdateAirport
 {
     public record UpdateAirportCommand : IRequest
     {

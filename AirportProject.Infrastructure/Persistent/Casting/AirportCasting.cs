@@ -1,4 +1,5 @@
-﻿using AirportProject.Domain.DTOs;
+﻿using AirportProject.Application.Airports.Commands.CreateAirport;
+using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -7,15 +8,14 @@ namespace AirportProject.Infrastructure.Persistent.Casting
 {
     public static class AirportCasting
     {
-        public static Task<Airport> ToAirport(this AirportDTO airportDTO)
+        public static Task<Airport> ToAirport(this CreateAirportCommand createAirportCommand)
         {
             return Task.FromResult(
                 new Airport
                 {
-                    Id = airportDTO.Id,
-                    Name = airportDTO.Name,
-                    Country = airportDTO.Country,
-                    City = airportDTO.City
+                    Name = createAirportCommand.Name,
+                    Country = createAirportCommand.Country,
+                    City = createAirportCommand.City
                 });
         }
 

@@ -1,10 +1,11 @@
-﻿using AirportProject.Application.Airports.Command.DeleteAirport;
-using AirportProject.Application.Airports.Command.UpdateAirport;
-using AirportProject.Application.Airports.Commands.CreateAirport;
+﻿using AirportProject.Application.Airports.Commands.CreateAirport;
+using AirportProject.Application.Airports.Commands.DeleteAirport;
+using AirportProject.Application.Airports.Commands.UpdateAirport;
 using AirportProject.Application.Airports.Queries.GetAirportsWithPagination;
 using AirportProject.Application.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AirportProject.Controllers
@@ -31,11 +32,13 @@ namespace AirportProject.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateAirportCommand createAirportCommand)
+        public async Task<IActionResult> Create(
+            [FromBody] CreateAirportCommand createAirportCommand, 
+            CancellationToken cancellationToken)
         {
             try
             {
-                var response = await this.Mediator.Send(createAirportCommand);
+                var response = await this.Mediator.Send(createAirportCommand, cancellationToken);
 
                 return Ok(response);
             }

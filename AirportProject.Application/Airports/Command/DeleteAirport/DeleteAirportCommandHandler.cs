@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AirportProject.Application.Airports.Command.DeleteAirport
+namespace AirportProject.Application.Airports.Commands.DeleteAirport
 {
     public class DeleteAirportCommandHandler : IRequestHandler<DeleteAirportCommand>
     {

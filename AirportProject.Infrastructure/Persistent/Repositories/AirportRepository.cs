@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
+using AirportProject.Application.Airports.Commands.CreateAirport;
 
 namespace AirportProject.Infrastructure.Persistent.Repositories
 {
@@ -18,16 +20,15 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             this.context = context;
         }
 
-        public async Task<AirportDTO> Create(AirportDTO airportDTO)
+        public async Task<Airport> Create(
+            CreateAirportCommand createAirportCommand, CancellationToken cancellationToken)
         {
-            var airport = await airportDTO.ToAirport();
+            var airport = await createAirportCommand.ToAirport();
 
-            await this.context.AddAsync(airport);
-            await this.context.SaveChangesAsync();
+            await this.context.AddAsync(airport, cancellationToken);
+            await this.context.SaveChangesAsync(cancellationToken);
 
-            airportDTO.Id = airport.Id;
-
-            return airportDTO;
+            return airport;
         }
 
         public async Task<bool> Delete(int id)
@@ -109,6 +110,14 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             var airports = await this.context.Airports.ToListAsync();
 
             return airports.Count;
+        }
+
+        public async Task<bool> DoesAirportExists(string name, CancellationToken cancellationToken)
+        {
+            var airport = await this.context.Airports
+                .FirstOrDefaultAsync(a => a.Name == name, cancellationToken);
+
+            return airport != null;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AirportProject.Application.Abstract;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.DTOs.Validation;
+using AirportProject.Domain.Models;
 using MediatR;
 using System;
 using System.Threading;
@@ -22,19 +23,20 @@ namespace AirportProject.Application.Airports.Commands.CreateAirport
             CreateAirportCommand request,
             CancellationToken cancellationToken)
         {
-            var airportDTO = new AirportDTO()
-            {
-                Name = request.Name,
-                Country = request.Country,
-                City = request.City
-            };
-
-            if (!airportDTO.IsValid())
+            if (!await request.IsValid(repository, cancellationToken))
             {
                 throw new ArgumentException("Input data was not in correct format");
             }
 
-            return await repository.Create(airportDTO);
+            var airport = await repository.Create(request, cancellationToken);
+
+            return new AirportDTO
+            {
+                Id = airport.Id,
+                Name = airport.Name,
+                Country = airport.Country,
+                City = airport.City
+            };
         }
     }
 }

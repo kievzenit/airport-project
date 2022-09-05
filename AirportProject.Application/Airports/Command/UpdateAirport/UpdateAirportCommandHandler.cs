@@ -7,7 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AirportProject.Application.Airports.Command.UpdateAirport
+namespace AirportProject.Application.Airports.Commands.UpdateAirport
 {
     public class UpdateAirportCommandHandler : IRequestHandler<UpdateAirportCommand>
     {

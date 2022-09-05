@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace AirportProject.Application.Airports.Command.DeleteAirport
+namespace AirportProject.Application.Airports.Commands.DeleteAirport
 {
     public record DeleteAirportCommand(int id) : IRequest
     {
