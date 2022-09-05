@@ -1,5 +1,5 @@
 ﻿using AirportProject.Application.Airports.Commands.CreateAirport;
-using AirportProject.Domain.DTOs;
+using AirportProject.Application.Airports.Commands.UpdateAirport;
 using AirportProject.Domain.Models;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,7 +13,8 @@ namespace AirportProject.Application.Abstract
             CreateAirportCommand createAirportCommand, CancellationToken cancellationToken);
         public Task<ICollection<Airport>> GetRange(
             int offset, int count, CancellationToken cancellationToken);
-        public Task<bool> Update(AirportDTO airportDTO);
+        public Task<bool> Update(
+            UpdateAirportCommand updateAirportCommand, CancellationToken cancellationToken);
         public Task<bool> Delete(int id);
 
         public Task<bool> DoesAirportExists(string name, CancellationToken cancellationToken);

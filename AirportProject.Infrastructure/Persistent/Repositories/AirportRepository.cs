@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using AirportProject.Application.Airports.Commands.CreateAirport;
+using AirportProject.Application.Airports.Commands.UpdateAirport;
 
 namespace AirportProject.Infrastructure.Persistent.Repositories
 {
@@ -82,19 +83,20 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return airports;
         }
 
-        public async Task<bool> Update(AirportDTO airportDTO)
+        public async Task<bool> Update(
+            UpdateAirportCommand updateAirportCommand, CancellationToken cancellationToken)
         {
             var airport = await this.context.Airports
-                .FirstOrDefaultAsync(a => a.Id == airportDTO.Id);
+                .FirstOrDefaultAsync(a => a.Id == updateAirportCommand.Id, cancellationToken);
 
             if (airport == null)
                 return false;
 
-            airport.Name = airportDTO.Name;
-            airport.Country = airportDTO.Country;
-            airport.City = airportDTO.City;
+            airport.Name = updateAirportCommand.Name;
+            airport.Country = updateAirportCommand.Country;
+            airport.City = updateAirportCommand.City;
 
-            await this.context.SaveChangesAsync();
+            await this.context.SaveChangesAsync(cancellationToken);
 
             return true;
         }

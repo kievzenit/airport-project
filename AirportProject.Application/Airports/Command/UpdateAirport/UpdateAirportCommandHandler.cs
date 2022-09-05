@@ -1,4 +1,5 @@
 ﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Airports.Command.UpdateAirport;
 using AirportProject.Application.Exceptions;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.DTOs.Validation;
@@ -22,20 +23,12 @@ namespace AirportProject.Application.Airports.Commands.UpdateAirport
             UpdateAirportCommand request, 
             CancellationToken cancellationToken)
         {
-            var airportDTO = new AirportDTO
-            {
-                Id = request.Id,
-                Name = request.Name,
-                Country = request.Country,
-                City = request.City
-            };
-
-            if (airportDTO.Id <= 0 || !airportDTO.IsValid())
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Input data was not in correct format");
             }
 
-            var success = await repository.Update(airportDTO);
+            var success = await repository.Update(request, cancellationToken);
 
             if (!success)
             {
