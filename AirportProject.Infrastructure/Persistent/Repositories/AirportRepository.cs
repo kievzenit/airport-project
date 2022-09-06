@@ -32,24 +32,24 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return airport;
         }
 
-        public async Task<bool> Delete(int id)
+        public async Task<bool> Delete(int id, CancellationToken cancellationToken)
         {
             var airport = await this.context.Airports
-                .FirstOrDefaultAsync(a => a.Id == id);
+                .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
             if (airport == null)
                 return false;
 
             var flights = await this.context.Flights
                 .Where(f => f.ArrivalAirport == airport || f.DepartureAirport == airport)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             var tickets = new List<Ticket>();
             foreach (var flight in flights)
             {
                 var relatedTickets = await this.context.Tickets
                     .Where(t => t.Flight == flight)
-                    .ToListAsync();
+                    .ToListAsync(cancellationToken);
 
                 tickets.AddRange(relatedTickets);
             }
@@ -59,7 +59,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             {
                 var relatedPassengersTickets = await this.context.PassengersTickets
                     .Where(pt => pt.Ticket == ticket)
-                    .ToListAsync();
+                    .ToListAsync(cancellationToken);
 
                 this.context.RemoveRange(relatedPassengersTickets);
             }
@@ -67,7 +67,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             this.context.RemoveRange(tickets);
             this.context.RemoveRange(flights);
             this.context.Remove(airport);
-            await this.context.SaveChangesAsync();
+            await this.context.SaveChangesAsync(cancellationToken);
 
             return true;
         }

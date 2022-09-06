@@ -18,12 +18,12 @@ namespace AirportProject.Application.Airports.Commands.DeleteAirport
 
         public async Task<Unit> Handle(DeleteAirportCommand request, CancellationToken cancellationToken)
         {
-            if (request.Id <= 0)
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Id cannot be less or equal to zero");
             }
 
-            var success = await repository.Delete(request.Id);
+            var success = await repository.Delete(request.Id, cancellationToken);
 
             if (!success)
             {

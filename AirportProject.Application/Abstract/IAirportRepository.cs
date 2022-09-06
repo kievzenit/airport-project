@@ -15,7 +15,7 @@ namespace AirportProject.Application.Abstract
             int offset, int count, CancellationToken cancellationToken);
         public Task<bool> Update(
             UpdateAirportCommand updateAirportCommand, CancellationToken cancellationToken);
-        public Task<bool> Delete(int id);
+        public Task<bool> Delete(int id, CancellationToken cancellationToken);
 
         public Task<bool> DoesAirportExists(string name, CancellationToken cancellationToken);
 
