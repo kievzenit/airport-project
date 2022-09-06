@@ -1,10 +1,12 @@
-﻿using AirportProject.Domain.DTOs;
+﻿using AirportProject.Application.Abstract;
+using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
-using AirportProject.Application.Abstract;
 using AirportProject.Infrastructure.Persistent.Casting;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AirportProject.Infrastructure.Persistent.Repositories
@@ -80,21 +82,15 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return true;
         }
 
-        public async Task<ICollection<FlightDTO>> GetAll()
-        {
-            var flights = await this.context.Flights.ToListAsync();
-
-            return await flights.ToFlightDTOs(this.context);
-        }
-
-        public async Task<ICollection<FlightDTO>> GetRange(int offset, int count)
+        public async Task<ICollection<Flight>> GetRange(
+            int offset, int count, CancellationToken cancellationToken)
         {
             var flights = await this.context.Flights
                 .Skip((offset - 1) * count)
                 .Take(count)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
-            return await flights.ToFlightDTOs(this.context);
+            return flights;
         }
 
         public async Task<bool> Update(FlightDTO flightDTO)
@@ -182,9 +178,21 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return flightDTO;
         }
 
-        public async Task<int> GetTotalCount()
+        public async Task<Tuple<Ticket, Ticket>> GetTicketsByFlight(
+            Flight flight, CancellationToken cancellationToken)
         {
-            var flights = await this.context.Flights.ToListAsync();
+            var economyTicket = await this.context.Tickets
+                .FirstOrDefaultAsync(t => t.Flight == flight && t.Type == "economy", cancellationToken);
+
+            var businessTicket = await this.context.Tickets
+                .FirstOrDefaultAsync(t => t.Flight == flight && t.Type == "business", cancellationToken);
+
+            return Tuple.Create(economyTicket, businessTicket);
+        }
+
+        public async Task<int> GetTotalCount(CancellationToken cancellationToken)
+        {
+            var flights = await this.context.Flights.ToListAsync(cancellationToken);
 
             return flights.Count;
         }
