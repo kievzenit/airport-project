@@ -6,7 +6,7 @@ namespace AirportProject.Infrastructure
 {
     public static class InfrastructureRegister
     {
-        public static void AddInfrastructure(this IServiceCollection serviceCollection)
+        public static void AddInfrastructureServices(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<IAirportRepository, AirportRepository>();
             serviceCollection.AddTransient<IFlightRepository, FlightRepository>();

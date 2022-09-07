@@ -1,7 +1,6 @@
 using AirportProject.Application;
 using AirportProject.Infrastructure;
 using AirportProject.Infrastructure.Persistent;
-using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using System;
 
 namespace AirportProject
 {
@@ -47,7 +45,7 @@ namespace AirportProject
                 .UseLazyLoadingProxies()
                 .UseSqlServer(Configuration.GetConnectionString("AirportProjectDB")));
 
-            services.AddInfrastructure();
+            services.AddInfrastructureServices();
             services.AddApplicationServices();
         }
 
