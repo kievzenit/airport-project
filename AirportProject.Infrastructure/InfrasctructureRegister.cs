@@ -8,10 +8,10 @@ namespace AirportProject.Infrastructure
     {
         public static void AddInfrastructureServices(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddTransient<IAirportRepository, AirportRepository>();
-            serviceCollection.AddTransient<IFlightRepository, FlightRepository>();
-            serviceCollection.AddTransient<ITicketRepository, TicketRepository>();
-            serviceCollection.AddTransient<IPassengerRepository, PassengerRepository>();
+            serviceCollection.AddScoped<IAirportRepository, AirportRepository>();
+            serviceCollection.AddScoped<IFlightRepository, FlightRepository>();
+            serviceCollection.AddScoped<ITicketRepository, TicketRepository>();
+            serviceCollection.AddScoped<IPassengerRepository, PassengerRepository>();
         }
     }
 }
