@@ -1,9 +1,8 @@
 ﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Casting;
 using AirportProject.Domain.DTOs;
-using AirportProject.Domain.Models;
 using MediatR;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,10 +12,12 @@ namespace AirportProject.Application.Flights.Queries.GetFlightsWithPagination
         IRequestHandler<GetFlightsWithPaginationQuery, PageResultDTO<FlightDTO>>
     {
         private readonly IFlightRepository repository;
+        private readonly FlightsCaster caster;
 
-        public GetFlightsWithPaginationQueryHandler(IFlightRepository repository)
+        public GetFlightsWithPaginationQueryHandler(IFlightRepository repository, FlightsCaster caster)
         {
             this.repository = repository;
+            this.caster = caster;
         }
 
         public async Task<PageResultDTO<FlightDTO>> Handle(
@@ -31,39 +32,9 @@ namespace AirportProject.Application.Flights.Queries.GetFlightsWithPagination
                 request.PageNumber, request.PageSize, cancellationToken);
             var totalCount = await this.repository.GetTotalCount(cancellationToken);
 
-            var flightDTOs = await this.ConvertToFlightDTOs(flights, cancellationToken);
+            var flightDTOs = await this.caster.Cast(flights, cancellationToken);
 
             return new PageResultDTO<FlightDTO>(flightDTOs, totalCount);
-        }
-
-        public async Task<ICollection<FlightDTO>> ConvertToFlightDTOs(
-            ICollection<Flight> flights, CancellationToken cancellationToken)
-        {
-            var flightDTOs = new List<FlightDTO>(flights.Count);
-
-            foreach (var flight in flights)
-            {
-                var tickets = await this.repository.GetTicketsByFlight(flight, cancellationToken);
-                var economyTicket = tickets.Item1;
-                var businessticket = tickets.Item2;
-
-                var flightDTO = new FlightDTO
-                {
-                    Id = flight.Id,
-                    ArrivalAirportName = flight.ArrivalAirport.Name,
-                    DepartureAirportName = flight.DepartureAirport.Name,
-                    ArrivalTime = flight.ArrivalTime,
-                    DepartureTime = flight.DepartureTime,
-                    Status = flight.Status,
-                    Terminal = flight.Terminal,
-                    EconomyPrice = economyTicket.Price,
-                    BusinessPrice = businessticket.Price
-                };
-
-                flightDTOs.Add(flightDTO);
-            }
-
-            return flightDTOs;
         }
     }
 }

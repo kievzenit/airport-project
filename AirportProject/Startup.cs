@@ -1,3 +1,4 @@
+using AirportProject.Application;
 using AirportProject.Infrastructure;
 using AirportProject.Infrastructure.Persistent;
 using MediatR;
@@ -47,7 +48,7 @@ namespace AirportProject
                 .UseSqlServer(Configuration.GetConnectionString("AirportProjectDB")));
 
             services.AddInfrastructure();
-            services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddApplicationServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
