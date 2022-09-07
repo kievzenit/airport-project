@@ -1,4 +1,5 @@
 ﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Flights.Commands.CreateFlight;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
 using AirportProject.Infrastructure.Persistent.Casting;
@@ -20,38 +21,50 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             this.context = context;
         }
 
-        public async Task<FlightDTO> Create(FlightDTO flightDTO)
+        public async Task<Flight> Create(CreateFlightCommand command, CancellationToken cancellationToken)
         {
-            var flight = await flightDTO.ToFlight(this.context);
+            var arrivalAirport = await this.context.Airports.FirstOrDefaultAsync(
+                a => a.Name == command.ArrivalAirportName, cancellationToken);
+            var departureAirport = await this.context.Airports.FirstOrDefaultAsync(
+                a => a.Name == command.DepartureAirportName, cancellationToken);
 
-            if (flight == null)
+            if (arrivalAirport == null || departureAirport == null)
                 return default;
+
+
+            var flight = new Flight
+            {
+                ArrivalAirport = arrivalAirport,
+                DepartureAirport = departureAirport,
+                ArrivalTime = command.ArrivalTime,
+                DepartureTime = command.DepartureTime,
+                Status = command.Status,
+                Terminal = command.Terminal
+            };
 
             var economyTicket = new Ticket
             {
-                Price = flightDTO.EconomyPrice,
+                Price = command.EconomyPrice,
                 Type = "economy",
                 Flight = flight
             };
 
             var businessTicket = new Ticket
             {
-                Price = flightDTO.BusinessPrice,
+                Price = command.BusinessPrice,
                 Type = "business",
                 Flight = flight
             };
 
-            await this.context.AddAsync(flight);
-            await this.context.AddAsync(economyTicket);
-            await this.context.AddAsync(businessTicket);
-            await this.context.SaveChangesAsync();
+            await this.context.AddAsync(flight, cancellationToken);
+            await this.context.AddAsync(economyTicket, cancellationToken);
+            await this.context.AddAsync(businessTicket, cancellationToken);
+            await this.context.SaveChangesAsync(cancellationToken);
 
             if (economyTicket.Id <= 0 || businessTicket.Id <= 0)
                 return default;
 
-            flightDTO.Id = flight.Id;
-
-            return flightDTO;
+            return flight;
         }
 
         public async Task<bool> Delete(int id)

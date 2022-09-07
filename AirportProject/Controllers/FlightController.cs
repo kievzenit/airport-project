@@ -39,11 +39,12 @@ namespace AirportProject.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateFlightCommand createFlightCommand)
+        public async Task<IActionResult> Create(
+            [FromBody] CreateFlightCommand createFlightCommand, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await this.Mediator.Send(createFlightCommand);
+                var response = await this.Mediator.Send(createFlightCommand, cancellationToken);
 
                 return Ok(response);
             }

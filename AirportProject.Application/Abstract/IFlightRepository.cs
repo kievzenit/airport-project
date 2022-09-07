@@ -1,4 +1,5 @@
-﻿using AirportProject.Domain.DTOs;
+﻿using AirportProject.Application.Flights.Commands.CreateFlight;
+using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ namespace AirportProject.Application.Abstract
 {
     public interface IFlightRepository
     {
-        public Task<FlightDTO> Create(FlightDTO flightDTO);
+        public Task<Flight> Create(CreateFlightCommand command, CancellationToken cancellationToken);
         public Task<ICollection<Flight>> GetRange(
             int offset, int count, CancellationToken cancellationToken);
         public Task<bool> Update(FlightDTO flightDTO);
