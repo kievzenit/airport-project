@@ -1,5 +1,6 @@
 ﻿using AirportProject.Application.Abstract;
 using AirportProject.Application.Flights.Commands.CreateFlight;
+using AirportProject.Application.Flights.Commands.UpdateFlight;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
 using AirportProject.Infrastructure.Persistent.Casting;
@@ -106,24 +107,26 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return flights;
         }
 
-        public async Task<bool> Update(FlightDTO flightDTO)
+        public async Task<bool> Update(UpdateFlightCommand command, CancellationToken cancellationToken)
         {
-            var flight = await this.context.Flights.FirstOrDefaultAsync(f => f.Id == flightDTO.Id);
+            var flight = await this.context.Flights
+                .FirstOrDefaultAsync(f => f.Id == command.Id, cancellationToken);
 
             if (flight == null)
                 return false;
 
-            flight.Terminal = flightDTO.Terminal;
-            flight.Status = flightDTO.Status;
-            flight.DepartureTime = flightDTO.DepartureTime;
-            flight.ArrivalTime = flightDTO.ArrivalTime;
+            flight.Terminal = command.Terminal;
+            flight.Status = command.Status;
+            flight.DepartureTime = command.DepartureTime;
+            flight.ArrivalTime = command.ArrivalTime;
 
             var economyTicket = await this.context.Tickets
                 .FirstOrDefaultAsync(t =>
                     t.Flight == flight
                     && t.Flight.ArrivalAirport.Name == flight.ArrivalAirport.Name
                     && t.Flight.DepartureAirport.Name == flight.DepartureAirport.Name
-                    && t.Type == "economy");
+                    && t.Type == "economy",
+                    cancellationToken);
 
             if (economyTicket == null)
                 return false;
@@ -133,23 +136,24 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
                     t.Flight == flight
                     && t.Flight.ArrivalAirport.Name == flight.ArrivalAirport.Name
                     && t.Flight.DepartureAirport.Name == flight.DepartureAirport.Name
-                    && t.Type == "business");
+                    && t.Type == "business",
+                    cancellationToken);
 
             if (businessTicket == null)
                 return false;
 
-            economyTicket.Price = flightDTO.EconomyPrice;
-            businessTicket.Price = flightDTO.BusinessPrice;
+            economyTicket.Price = command.EconomyPrice;
+            businessTicket.Price = command.BusinessPrice;
 
             var arrivalAirport = await this.context.Airports
-                .FirstOrDefaultAsync(a => a.Name == flightDTO.ArrivalAirportName);
+                .FirstOrDefaultAsync(a => a.Name == command.ArrivalAirportName, cancellationToken);
 
             if (arrivalAirport == null)
                 return false;
 
             flight.ArrivalAirport = arrivalAirport;
 
-            await this.context.SaveChangesAsync();
+            await this.context.SaveChangesAsync(cancellationToken);
 
             return true;
         }

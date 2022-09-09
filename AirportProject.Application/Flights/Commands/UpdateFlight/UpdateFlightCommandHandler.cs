@@ -20,25 +20,12 @@ namespace AirportProject.Application.Flights.Commands.UpdateFlight
 
         public async Task<Unit> Handle(UpdateFlightCommand request, CancellationToken cancellationToken)
         {
-            var flightDTO = new FlightDTO
-            {
-                Id = request.Id,
-                ArrivalAirportName = request.ArrivalAirportName,
-                DepartureAirportName = request.DepartureAirportName,
-                Terminal = request.Terminal,
-                ArrivalTime = request.ArrivalTime,
-                DepartureTime = request.DepartureTime,
-                Status = request.Status,
-                EconomyPrice = request.EconomyPrice,
-                BusinessPrice = request.BusinessPrice
-            };
-
-            if (flightDTO.Id <= 0 || !flightDTO.IsValid())
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Input data was not in correct format");
             }
 
-            var success = await this.repository.Update(flightDTO);
+            var success = await this.repository.Update(request, cancellationToken);
 
             if (!success)
             {

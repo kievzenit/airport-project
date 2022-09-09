@@ -1,4 +1,5 @@
 ﻿using AirportProject.Application.Flights.Commands.CreateFlight;
+using AirportProject.Application.Flights.Commands.UpdateFlight;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
 using System;
@@ -13,7 +14,7 @@ namespace AirportProject.Application.Abstract
         public Task<Flight> Create(CreateFlightCommand command, CancellationToken cancellationToken);
         public Task<ICollection<Flight>> GetRange(
             int offset, int count, CancellationToken cancellationToken);
-        public Task<bool> Update(FlightDTO flightDTO);
+        public Task<bool> Update(UpdateFlightCommand command, CancellationToken cancellationToken);
         public Task<bool> Delete(int id);
 
         public Task<FlightDTO> SearchByFlightNumber(int id);

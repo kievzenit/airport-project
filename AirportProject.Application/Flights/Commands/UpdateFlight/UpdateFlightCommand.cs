@@ -8,7 +8,6 @@ namespace AirportProject.Application.Flights.Commands.UpdateFlight
     {
         public int Id { get; init; }
         public string ArrivalAirportName { get; init; }
-        public string DepartureAirportName { get; init; }
         public char Terminal { get; init; }
         public DateTime ArrivalTime { get; init; }
         public DateTime DepartureTime { get; init; }
