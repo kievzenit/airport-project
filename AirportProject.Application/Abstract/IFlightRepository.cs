@@ -3,7 +3,7 @@ using AirportProject.Application.Flights.Commands.DeleteFlight;
 using AirportProject.Application.Flights.Commands.UpdateFlight;
 using AirportProject.Application.Flights.Queries.GetFlightById;
 using AirportProject.Application.Flights.Queries.GetFlightsByArrivalAirport;
-using AirportProject.Domain.DTOs;
+using AirportProject.Application.Flights.Queries.GetFlightsByDepartureAirport;
 using AirportProject.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,8 @@ namespace AirportProject.Application.Abstract
             GetFlightByIdQuery query, CancellationToken cancellationToken);
         public Task<ICollection<Flight>> SearchByFlightArrivalAirport(
             GetFlightsByArrivalAirportQuery query, CancellationToken cancellationToken);
-        public Task<ICollection<FlightDTO>> SearchByFlightDepartureAirport(string airportName);
+        public Task<ICollection<Flight>> SearchByFlightDepartureAirport(
+            GetFlightsByDepartureAirportQuery query, CancellationToken cancellationToken);
 
         public Task<Tuple<Ticket, Ticket>> GetTicketsByFlight(
             Flight flight, CancellationToken cancellationToken);

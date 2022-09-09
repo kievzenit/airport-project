@@ -151,11 +151,14 @@ namespace AirportProject.Controllers
         }
 
         [HttpGet("search/byDepartureAirport/{airportName}")]
-        public async Task<IActionResult> SearchByFlightDepartureAirport(string airportName)
+        public async Task<IActionResult> SearchByFlightDepartureAirport(
+            string airportName, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await this.Mediator.Send(new GetFlightsByDepartureAirportQuery(airportName));
+                var response = await this.Mediator.Send(
+                    new GetFlightsByDepartureAirportQuery(airportName),
+                    cancellationToken);
 
                 return Ok(response);
             }

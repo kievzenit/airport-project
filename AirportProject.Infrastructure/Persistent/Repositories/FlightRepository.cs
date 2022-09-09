@@ -4,9 +4,8 @@ using AirportProject.Application.Flights.Commands.DeleteFlight;
 using AirportProject.Application.Flights.Commands.UpdateFlight;
 using AirportProject.Application.Flights.Queries.GetFlightById;
 using AirportProject.Application.Flights.Queries.GetFlightsByArrivalAirport;
-using AirportProject.Domain.DTOs;
+using AirportProject.Application.Flights.Queries.GetFlightsByDepartureAirport;
 using AirportProject.Domain.Models;
-using AirportProject.Infrastructure.Persistent.Casting;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -171,15 +170,14 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return flights;
         }
 
-        public async Task<ICollection<FlightDTO>> SearchByFlightDepartureAirport(string airportName)
+        public async Task<ICollection<Flight>> SearchByFlightDepartureAirport(
+            GetFlightsByDepartureAirportQuery query, CancellationToken cancellationToken)
         {
             var flights = await this.context.Flights
-                .Where(f => f.DepartureAirport.Name == airportName)
-                .ToListAsync();
+                .Where(f => f.DepartureAirport.Name == query.AirportName)
+                .ToListAsync(cancellationToken);
 
-            var flightDTOs = await flights.ToFlightDTOs(this.context);
-
-            return flightDTOs;
+            return flights;
         }
 
         public async Task<Flight> SearchByFlightNumber(
