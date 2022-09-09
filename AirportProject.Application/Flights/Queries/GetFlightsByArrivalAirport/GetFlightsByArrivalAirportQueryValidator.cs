@@ -4,7 +4,7 @@
     {
         public static bool IsValid(this GetFlightsByArrivalAirportQuery query)
         {
-            return query.AirportName.Length > 0 && query.AirportName.Length < 50;
+            return query.AirportName.Length > 0 && query.AirportName.Length <= 50;
         }
     }
 }
