@@ -1,5 +1,6 @@
 ﻿using AirportProject.Application.Abstract;
 using AirportProject.Application.Flights.Commands.CreateFlight;
+using AirportProject.Application.Flights.Commands.DeleteFlight;
 using AirportProject.Application.Flights.Commands.UpdateFlight;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
@@ -68,30 +69,30 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return flight;
         }
 
-        public async Task<bool> Delete(int id)
+        public async Task<bool> Delete(DeleteFlightCommand command, CancellationToken cancellationToken)
         {
             var flight = await this.context.Flights
-                .FirstOrDefaultAsync(f => f.Id == id);
+                .FirstOrDefaultAsync(f => f.Id == command.Id, cancellationToken);
 
             if (flight == null)
                 return false;
 
             var tickets = await this.context.Tickets
                 .Where(t => t.Flight == flight)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             foreach (var ticket in tickets)
             {
                 var relatedPassengersTickets = await this.context.PassengersTickets
                     .Where(pt => pt.Ticket == ticket)
-                    .ToListAsync();
+                    .ToListAsync(cancellationToken);
 
                 this.context.RemoveRange(relatedPassengersTickets);
             }
 
             this.context.RemoveRange(tickets);
             this.context.Remove(flight);
-            await this.context.SaveChangesAsync();
+            await this.context.SaveChangesAsync(cancellationToken);
 
             return true;
         }

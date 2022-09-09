@@ -83,13 +83,13 @@ namespace AirportProject.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> Delete([FromBody] int id)
+        public async Task<IActionResult> Delete([FromBody] int id, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await this.Mediator.Send(new DeleteFlightCommand(id));
+                await this.Mediator.Send(new DeleteFlightCommand(id), cancellationToken);
 
-                return Ok(response);
+                return Ok();
             }
             catch (ArgumentException ex)
             {

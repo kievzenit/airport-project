@@ -2,9 +2,6 @@
 using AirportProject.Application.Exceptions;
 using MediatR;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,12 +18,12 @@ namespace AirportProject.Application.Flights.Commands.DeleteFlight
 
         public async Task<Unit> Handle(DeleteFlightCommand request, CancellationToken cancellationToken)
         {
-            if (request.Id <= 0)
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Flight id must be not equal or less than zero");
             }
 
-            var success = await this.repository.Delete(request.Id);
+            var success = await this.repository.Delete(request, cancellationToken);
 
             if (!success)
             {
