@@ -2,6 +2,7 @@
 using AirportProject.Application.Flights.Commands.CreateFlight;
 using AirportProject.Application.Flights.Commands.DeleteFlight;
 using AirportProject.Application.Flights.Commands.UpdateFlight;
+using AirportProject.Application.Flights.Queries.GetFlightById;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
 using AirportProject.Infrastructure.Persistent.Casting;
@@ -181,19 +182,13 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return flightDTOs;
         }
 
-        public async Task<FlightDTO> SearchByFlightNumber(int id)
+        public async Task<Flight> SearchByFlightNumber(
+            GetFlightByIdQuery query, CancellationToken cancellationToken)
         {
             var flight = await this.context.Flights
-                .FirstOrDefaultAsync(f => f.Id == id);
+                .FirstOrDefaultAsync(f => f.Id == query.Id, cancellationToken);
 
-            if (flight == null)
-            {
-                return default;
-            }
-
-            var flightDTO = await flight.ToFlightDTO(this.context);
-
-            return flightDTO;
+            return flight;
         }
 
         public async Task<Tuple<Ticket, Ticket>> GetTicketsByFlight(

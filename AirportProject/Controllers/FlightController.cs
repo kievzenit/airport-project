@@ -106,11 +106,11 @@ namespace AirportProject.Controllers
         }
 
         [HttpGet("search/byId/{flightId}")]
-        public async Task<IActionResult> SearchByFlightId(int flightId)
+        public async Task<IActionResult> SearchByFlightId(int flightId, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await this.Mediator.Send(new GetFlightByIdQuery(flightId));
+                var response = await this.Mediator.Send(new GetFlightByIdQuery(flightId), cancellationToken);
 
                 return Ok(response);
             }
