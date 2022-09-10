@@ -85,11 +85,11 @@ namespace AirportProject.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> Delete([FromBody] int id)
+        public async Task<IActionResult> Delete([FromBody] int id, CancellationToken cancellationToken)
         {
             try
             {
-                await this.Mediator.Send(new DeletePassengerCommand(id));
+                await this.Mediator.Send(new DeletePassengerCommand(id), cancellationToken);
 
                 return Ok();
             }

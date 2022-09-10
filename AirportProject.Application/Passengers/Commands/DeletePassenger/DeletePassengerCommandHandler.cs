@@ -18,12 +18,12 @@ namespace AirportProject.Application.Passengers.Commands.DeletePassenger
 
         public async Task<Unit> Handle(DeletePassengerCommand request, CancellationToken cancellationToken)
         {
-            if (request.Id <= 0)
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Id must be not less than or equal to zero");
             }
 
-            var success = await this.repository.Delete(request.Id);
+            var success = await this.repository.Delete(request, cancellationToken);
 
             if (!success)
             {
