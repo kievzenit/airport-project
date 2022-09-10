@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
+using System.Threading;
 
 namespace AirportProject.Infrastructure.Persistent.Repositories
 {
@@ -48,21 +50,15 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return true;
         }
 
-        public async Task<ICollection<PassengerDTO>> GetAll()
-        {
-            var passengers = await this.context.Passengers.ToListAsync();
-
-            return await passengers.ToPassengerDTOs();
-        }
-
-        public async Task<ICollection<PassengerDTO>> GetRange(int offset, int count)
+        public async Task<ICollection<Passenger>> GetRange(
+            GetPassengersWithPaginationQuery query, CancellationToken cancellationToken)
         {
             var passengers = await this.context.Passengers
-                .Skip((offset - 1) * count)
-                .Take(count)
-                .ToListAsync();
+                .Skip((query.PageNumber - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToListAsync(cancellationToken);
 
-            return await passengers.ToPassengerDTOs();
+            return passengers;
         }
 
         public async Task<bool> Update(PassengerDTO passengerDTO)
@@ -152,11 +148,9 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return passengerDTOs;
         }
 
-        public async Task<int> GetTotalCount()
+        public async Task<int> GetTotalCount(CancellationToken cancellationToken)
         {
-            var passengers = await this.context.Passengers.ToListAsync();
-
-            return passengers.Count;
+            return await this.context.Passengers.CountAsync(cancellationToken);
         }
     }
 }

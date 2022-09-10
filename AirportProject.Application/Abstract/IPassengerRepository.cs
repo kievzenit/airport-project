@@ -1,5 +1,8 @@
-﻿using AirportProject.Domain.DTOs;
+﻿using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
+using AirportProject.Domain.DTOs;
+using AirportProject.Domain.Models;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AirportProject.Application.Abstract
@@ -7,8 +10,8 @@ namespace AirportProject.Application.Abstract
     public interface IPassengerRepository
     {
         public Task<PassengerDTO> Create(PassengerDTO passengerDTO);
-        public Task<ICollection<PassengerDTO>> GetAll();
-        public Task<ICollection<PassengerDTO>> GetRange(int offset, int count);
+        public Task<ICollection<Passenger>> GetRange(
+            GetPassengersWithPaginationQuery query, CancellationToken cancellationToken);
         public Task<bool> Update(PassengerDTO passengerDTO);
         public Task<bool> Delete(int id);
 
@@ -19,6 +22,6 @@ namespace AirportProject.Application.Abstract
         public Task<bool> AddTicket(int passengerId, int ticketId);
         public Task<bool> DeleteTicket(int passengerId, int ticketId);
 
-        public Task<int> GetTotalCount();
+        public Task<int> GetTotalCount(CancellationToken cancellationToken);
     }
 }

@@ -13,6 +13,7 @@ using AirportProject.Application.Passengers.Commands.UpdatePassenger;
 
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AirportProject.Controllers
@@ -20,11 +21,12 @@ namespace AirportProject.Controllers
     public class PassengerController : BaseApiController
     {
         [HttpGet("{page}")]
-        public async Task<IActionResult> GetPage(int page)
+        public async Task<IActionResult> GetPage(int page, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await this.Mediator.Send(new GetPassengersWithPaginationQuery(page));
+                var response = await this.Mediator.Send(
+                    new GetPassengersWithPaginationQuery(page), cancellationToken);
 
                 return Ok(response);
             }

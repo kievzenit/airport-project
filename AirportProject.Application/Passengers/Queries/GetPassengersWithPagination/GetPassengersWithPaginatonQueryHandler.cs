@@ -1,4 +1,5 @@
 ﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Casting;
 using AirportProject.Domain.DTOs;
 using MediatR;
 using System;
@@ -11,22 +12,27 @@ namespace AirportProject.Application.Passengers.Queries.GetPassengersWithPaginat
         IRequestHandler<GetPassengersWithPaginationQuery, PageResultDTO<PassengerDTO>>
     {
         private readonly IPassengerRepository repository;
+        private readonly PassengersCaster caster;
 
-        public GetPassengersWithPaginatonQueryHandler(IPassengerRepository repository)
+        public GetPassengersWithPaginatonQueryHandler(
+            IPassengerRepository repository, PassengersCaster caster)
         {
             this.repository = repository;
+            this.caster = caster;
         }
 
         public async Task<PageResultDTO<PassengerDTO>> Handle(
             GetPassengersWithPaginationQuery request, CancellationToken cancellationToken)
         {
-            if (request.PageNumber <= 0)
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Page must be not equal or less than zero");
             }
 
-            var passengerDTOs = await this.repository.GetRange(request.PageNumber, request.PageSize);
-            var totalCount = await this.repository.GetTotalCount();
+            var passengers = await this.repository.GetRange(request, cancellationToken);
+            var totalCount = await this.repository.GetTotalCount(cancellationToken);
+
+            var passengerDTOs = await this.caster.Cast(passengers);
 
             return new PageResultDTO<PassengerDTO>(passengerDTOs, totalCount);
         }
