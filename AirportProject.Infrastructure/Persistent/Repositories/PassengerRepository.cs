@@ -1,4 +1,5 @@
 ﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Passengers.Commands.AddTicketToPassenger;
 using AirportProject.Application.Passengers.Commands.CreatePassenger;
 using AirportProject.Application.Passengers.Commands.DeletePassenger;
 using AirportProject.Application.Passengers.Commands.UpdatePassenger;
@@ -7,6 +8,7 @@ using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
 using AirportProject.Infrastructure.Persistent.Casting;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -90,24 +92,33 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return true;
         }
 
-        public async Task<bool> AddTicket(int passengerId, int ticketId)
+        public async Task<bool> AddTicket(
+            AddTicketToPassengerCommand command, CancellationToken cancellationToken)
         {
-            var ticket = await this.context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
+            var ticket = await this.context.Tickets
+                .FirstOrDefaultAsync(t => t.Id == command.TicketId, cancellationToken);
             if (ticket == null)
                 return false;
 
-            var passenger = await this.context.Passengers.FirstOrDefaultAsync(p => p.Id == passengerId);
+            var passenger = await this.context.Passengers
+                .FirstOrDefaultAsync(p => p.Id == command.PassengerId, cancellationToken);
             if (passenger == null)
                 return false;
 
-            var passengerTicket = new PassengersTickets
+            var passengerTicket = await this.context.PassengersTickets
+                .FirstOrDefaultAsync(pt => pt.Passenger == passenger && pt.Ticket == ticket, cancellationToken);
+
+            if (passengerTicket != null)
+                throw new InvalidOperationException($"Passenger with id: {passenger.Id} is already have this ticket");
+
+            passengerTicket = new PassengersTickets
             {
                 Passenger = passenger,
                 Ticket = ticket
-            };
+            };            
 
-            await this.context.AddAsync(passengerTicket);
-            await this.context.SaveChangesAsync();
+            await this.context.AddAsync(passengerTicket, cancellationToken);
+            await this.context.SaveChangesAsync(cancellationToken);
 
             return true;
         }

@@ -108,11 +108,13 @@ namespace AirportProject.Controllers
         }
 
         [HttpPut("ticket")]
-        public async Task<IActionResult> AddTicket(int passengerId, int ticketId)
+        public async Task<IActionResult> AddTicket(
+            int passengerId, int ticketId, CancellationToken cancellationToken)
         {
             try
             {
-                await this.Mediator.Send(new AddTicketToPassengerCommand(passengerId, ticketId));
+                await this.Mediator.Send(
+                    new AddTicketToPassengerCommand(passengerId, ticketId), cancellationToken);
 
                 return Ok();
             }
@@ -123,6 +125,10 @@ namespace AirportProject.Controllers
             catch (NotFoundException ex)
             {
                 return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
             }
             catch
             {

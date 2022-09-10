@@ -1,4 +1,5 @@
-﻿using AirportProject.Application.Passengers.Commands.CreatePassenger;
+﻿using AirportProject.Application.Passengers.Commands.AddTicketToPassenger;
+using AirportProject.Application.Passengers.Commands.CreatePassenger;
 using AirportProject.Application.Passengers.Commands.DeletePassenger;
 using AirportProject.Application.Passengers.Commands.UpdatePassenger;
 using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
@@ -22,7 +23,8 @@ namespace AirportProject.Application.Abstract
         public Task<ICollection<PassengerDTO>> SearchByFirstname(string firstname);
         public Task<ICollection<PassengerDTO>> SearchByLastname(string lastname);
 
-        public Task<bool> AddTicket(int passengerId, int ticketId);
+        public Task<bool> AddTicket(
+            AddTicketToPassengerCommand command, CancellationToken cancellationToken);
         public Task<bool> DeleteTicket(int passengerId, int ticketId);
 
         public Task<int> GetTotalCount(CancellationToken cancellationToken);

@@ -19,16 +19,16 @@ namespace AirportProject.Application.Passengers.Commands.AddTicketToPassenger
         public async Task<Unit> Handle(
             AddTicketToPassengerCommand request, CancellationToken cancellationToken)
         {
-            if (request.TicketId <= 0 && request.PassengerId <= 0)
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Input data was not in correct format");
             }
 
-            var success = await this.repository.AddTicket(request.PassengerId, request.TicketId);
+            var success = await this.repository.AddTicket(request, cancellationToken);
 
             if (!success)
             {
-                throw new NotFoundException($"Ticket with id: {request.TicketId} or passenger with id: {request.PassengerId} was not found");
+                throw new NotFoundException($"Ticket with id: {request.TicketId} or passenger with id: {request.PassengerId} was not found or passenger is already have this ticket");
             }
 
             return Unit.Value;
