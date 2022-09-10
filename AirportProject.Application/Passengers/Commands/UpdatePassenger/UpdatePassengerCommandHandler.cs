@@ -20,21 +20,12 @@ namespace AirportProject.Application.Passengers.Commands.UpdatePassenger
 
         public async Task<Unit> Handle(UpdatePassengerCommand request, CancellationToken cancellationToken)
         {
-            var passengerDTO = new PassengerDTO
-            {
-                Id = request.Id,
-                Firstname = request.Firstname,
-                Lastname = request.Lastname,
-                Passport = request.Passport,
-                Nationality = request.Nationality
-            };
-
-            if (passengerDTO.Id <= 0 || !passengerDTO.IsValid(false))
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Input data was not in correct format");
             }
 
-            var success = await this.repository.Update(passengerDTO);
+            var success = await this.repository.Update(request, cancellationToken);
 
             if (!success)
             {

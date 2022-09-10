@@ -1,4 +1,5 @@
 ﻿using AirportProject.Application.Passengers.Commands.CreatePassenger;
+using AirportProject.Application.Passengers.Commands.UpdatePassenger;
 using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
@@ -13,7 +14,7 @@ namespace AirportProject.Application.Abstract
         public Task<Passenger> Create(CreatePassengerCommand command, CancellationToken cancellationToken);
         public Task<ICollection<Passenger>> GetRange(
             GetPassengersWithPaginationQuery query, CancellationToken cancellationToken);
-        public Task<bool> Update(PassengerDTO passengerDTO);
+        public Task<bool> Update(UpdatePassengerCommand command, CancellationToken cancellationToken);
         public Task<bool> Delete(int id);
 
         public Task<PassengerDTO> SearchByPassport(string passport);

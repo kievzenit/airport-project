@@ -1,5 +1,6 @@
 ﻿using AirportProject.Application.Abstract;
 using AirportProject.Application.Passengers.Commands.CreatePassenger;
+using AirportProject.Application.Passengers.Commands.UpdatePassenger;
 using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
@@ -69,19 +70,20 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return passengers;
         }
 
-        public async Task<bool> Update(PassengerDTO passengerDTO)
+        public async Task<bool> Update(UpdatePassengerCommand command, CancellationToken cancellationToken)
         {
-            var passenger = await this.context.Passengers.FirstOrDefaultAsync(p => p.Id == passengerDTO.Id);
+            var passenger = await this.context.Passengers
+                .FirstOrDefaultAsync(p => p.Id == command.Id, cancellationToken);
 
             if (passenger == null)
                 return false;
 
-            passenger.Firstname = passengerDTO.Firstname;
-            passenger.Lastname = passengerDTO.Lastname;
-            passenger.Passport = passengerDTO.Passport;
-            passenger.Nationality = passengerDTO.Nationality;
+            passenger.Firstname = command.Firstname;
+            passenger.Lastname = command.Lastname;
+            passenger.Passport = command.Passport;
+            passenger.Nationality = command.Nationality;
 
-            await this.context.SaveChangesAsync();
+            await this.context.SaveChangesAsync(cancellationToken);
 
             return true;
         }

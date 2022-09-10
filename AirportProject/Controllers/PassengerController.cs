@@ -61,11 +61,12 @@ namespace AirportProject.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdatePassengerCommand updatePassengerCommand)
+        public async Task<IActionResult> Update(
+            [FromBody] UpdatePassengerCommand updatePassengerCommand, CancellationToken cancellationToken)
         {
             try
             {
-                await this.Mediator.Send(updatePassengerCommand);
+                await this.Mediator.Send(updatePassengerCommand, cancellationToken);
 
                 return Ok();
             }
