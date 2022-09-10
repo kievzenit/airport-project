@@ -203,9 +203,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
 
         public async Task<int> GetTotalCount(CancellationToken cancellationToken)
         {
-            var flights = await this.context.Flights.ToListAsync(cancellationToken);
-
-            return flights.Count;
+            return await this.context.Flights.CountAsync(cancellationToken);
         }
     }
 }
