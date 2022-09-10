@@ -1,13 +1,14 @@
-﻿using AirportProject.Domain.DTOs;
+﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Passengers.Commands.CreatePassenger;
+using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
+using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
-using AirportProject.Application.Abstract;
 using AirportProject.Infrastructure.Persistent.Casting;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AirportProject.Infrastructure.Persistent.Repositories
 {
@@ -20,16 +21,23 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             this.context = context;
         }
 
-        public async Task<PassengerDTO> Create(PassengerDTO passengerDTO)
+        public async Task<Passenger> Create(
+            CreatePassengerCommand command, CancellationToken cancellationToken)
         {
-            var passenger = await passengerDTO.ToPassenger();
+            var passenger = new Passenger
+            {
+                Firstname = command.Firstname,
+                Lastname = command.Lastname,
+                Passport = command.Passport,
+                Nationality = command.Nationality,
+                Birthday = command.Birthday,
+                Gender = command.Gender
+            };
 
-            await this.context.AddAsync(passenger);
-            await this.context.SaveChangesAsync();
+            await this.context.AddAsync(passenger, cancellationToken);
+            await this.context.SaveChangesAsync(cancellationToken);
 
-            passengerDTO.Id = passenger.Id;
-
-            return passengerDTO;
+            return passenger;
         }
 
         public async Task<bool> Delete(int id)
