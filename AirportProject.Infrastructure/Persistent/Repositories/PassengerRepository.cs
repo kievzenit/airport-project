@@ -1,4 +1,4 @@
-﻿using AirportProject.Application.Abstract;
+﻿using AirportProject.Application.Common.Abstract;
 
 using AirportProject.Application.Passengers.Commands.AddTicketToPassenger;
 using AirportProject.Application.Passengers.Commands.CreatePassenger;

@@ -1,4 +1,4 @@
-﻿using AirportProject.Application.Abstract;
+﻿using AirportProject.Application.Common.Abstract;
 using AirportProject.Application.Tickets.Queries.GetSpecificTickets;
 using AirportProject.Application.Tickets.Queries.GetTicketsByPassengerId;
 using AirportProject.Domain.Models;

@@ -1,4 +1,4 @@
-﻿using AirportProject.Application.Abstract;
+﻿using AirportProject.Application.Common.Abstract;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
 using System.Collections.Generic;

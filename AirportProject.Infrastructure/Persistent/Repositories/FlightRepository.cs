@@ -1,4 +1,4 @@
-﻿using AirportProject.Application.Abstract;
+﻿using AirportProject.Application.Common.Abstract;
 using AirportProject.Application.Flights.Commands.CreateFlight;
 using AirportProject.Application.Flights.Commands.DeleteFlight;
 using AirportProject.Application.Flights.Commands.UpdateFlight;

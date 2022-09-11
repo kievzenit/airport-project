@@ -1,4 +1,4 @@
-﻿using AirportProject.Application.Abstract;
+﻿using AirportProject.Application.Common.Abstract;
 using AirportProject.Application.Airports.Command.UpdateAirport;
 using AirportProject.Application.Exceptions;
 using AirportProject.Domain.DTOs;

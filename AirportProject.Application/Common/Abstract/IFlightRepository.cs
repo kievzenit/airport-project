@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AirportProject.Application.Abstract
+namespace AirportProject.Application.Common.Abstract
 {
     public interface IFlightRepository
     {
