@@ -31,11 +31,12 @@ namespace AirportProject.Controllers
         }
 
         [HttpPost("search")]
-        public async Task<IActionResult> Search(GetSpecificTicketsQuery getSpecificTicketsQuery)
+        public async Task<IActionResult> Search(
+            GetSpecificTicketsQuery getSpecificTicketsQuery, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await this.Mediator.Send(getSpecificTicketsQuery);
+                var response = await this.Mediator.Send(getSpecificTicketsQuery, cancellationToken);
 
                 return Ok(response);
             }

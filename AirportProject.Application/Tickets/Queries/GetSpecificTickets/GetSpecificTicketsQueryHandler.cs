@@ -1,6 +1,6 @@
 ﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Casting;
 using AirportProject.Domain.DTOs;
-using AirportProject.Domain.DTOs.Validation;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -9,32 +9,29 @@ using System.Threading.Tasks;
 
 namespace AirportProject.Application.Tickets.Queries.GetSpecificTickets
 {
-    public class GetSpecificTicketsQeuryHandler :
+    public class GetSpecificTicketsQueryHandler :
         IRequestHandler<GetSpecificTicketsQuery, IEnumerable<TicketDTO>>
     {
         private readonly ITicketRepository repository;
+        private readonly TicketsCaster caster;
 
-        public GetSpecificTicketsQeuryHandler(ITicketRepository repository)
+        public GetSpecificTicketsQueryHandler(ITicketRepository repository, TicketsCaster caster)
         {
             this.repository = repository;
+            this.caster = caster;
         }
 
         public async Task<IEnumerable<TicketDTO>> Handle(
             GetSpecificTicketsQuery request, CancellationToken cancellationToken)
         {
-            var ticketDTO = new TicketDTO
-            {
-                From = request.From,
-                To = request.To,
-                Type = request.Type
-            };
-
-            if (!ticketDTO.IsValid())
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Input data was not in correct format");
             }
 
-            return await this.repository.GetTickets(ticketDTO);
+            var tickets = await this.repository.GetTickets(request, cancellationToken);
+
+            return await this.caster.Cast(tickets);
         }
     }
 }

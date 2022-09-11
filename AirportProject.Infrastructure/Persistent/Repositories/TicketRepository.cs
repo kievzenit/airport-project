@@ -1,13 +1,12 @@
-﻿using AirportProject.Domain.DTOs;
+﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Tickets.Queries.GetSpecificTickets;
+using AirportProject.Application.Tickets.Queries.GetTicketsByPassengerId;
 using AirportProject.Domain.Models;
-using AirportProject.Application.Abstract;
-using AirportProject.Infrastructure.Persistent.Casting;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using AirportProject.Application.Tickets.Queries.GetTicketsByPassengerId;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AirportProject.Infrastructure.Persistent.Repositories
 {
@@ -20,24 +19,26 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             this.context = context;
         }
 
-        public async Task<ICollection<TicketDTO>> GetTickets(TicketDTO ticketDTO)
+        public async Task<ICollection<Ticket>> GetTickets(
+            GetSpecificTicketsQuery query, CancellationToken cancellationToken)
         {
             var flights = await this.context.Flights
-                .Where(f => f.ArrivalAirport.Name == ticketDTO.To && f.DepartureAirport.Name == ticketDTO.From)
-                .ToListAsync();
+                .Where(f => f.ArrivalAirport.Name == query.To 
+                         && f.DepartureAirport.Name == query.From)
+                .ToListAsync(cancellationToken);
 
             var tickets = new List<Ticket>();
 
             foreach (var flight in flights)
             {
                 var flightRelatedTickets = await this.context.Tickets
-                    .Where(t => t.Flight == flight && t.Type == ticketDTO.Type)
-                    .ToListAsync();
+                    .Where(t => t.Flight == flight && t.Type == query.Type)
+                    .ToListAsync(cancellationToken);
 
                 tickets.AddRange(flightRelatedTickets);
             }
 
-            return await tickets.ToTicktDTOs();
+            return tickets;
         }
 
         public async Task<ICollection<Ticket>> GetTickets(
