@@ -1,6 +1,5 @@
 ﻿using AirportProject.Application.Common.Abstract;
 using AirportProject.Domain.DTOs;
-using AirportProject.Domain.DTOs.Validation;
 using AirportProject.Domain.Models;
 using MediatR;
 using System;
