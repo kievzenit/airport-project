@@ -3,7 +3,7 @@ using AirportProject.Domain.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace AirportProject.Application.Casting
+namespace AirportProject.Application.Common.Casting
 {
     public class PassengersCaster
     {

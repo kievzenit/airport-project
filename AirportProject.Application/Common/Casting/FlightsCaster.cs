@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AirportProject.Application.Casting
+namespace AirportProject.Application.Common.Casting
 {
     public class FlightsCaster
     {

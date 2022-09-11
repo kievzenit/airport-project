@@ -1,4 +1,4 @@
-﻿using AirportProject.Application.Casting;
+﻿using AirportProject.Application.Common.Casting;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
