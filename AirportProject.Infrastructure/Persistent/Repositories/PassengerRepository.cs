@@ -2,6 +2,7 @@
 using AirportProject.Application.Passengers.Commands.AddTicketToPassenger;
 using AirportProject.Application.Passengers.Commands.CreatePassenger;
 using AirportProject.Application.Passengers.Commands.DeletePassenger;
+using AirportProject.Application.Passengers.Commands.RemoveTicketFromPassenger;
 using AirportProject.Application.Passengers.Commands.UpdatePassenger;
 using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
 using AirportProject.Domain.DTOs;
@@ -123,13 +124,19 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return true;
         }
 
-        public async Task<bool> DeleteTicket(int passengerId, int ticketId)
+        public async Task<bool> DeleteTicket(
+            RemoveTicketFromPassengerCommand command, CancellationToken cancellationToken)
         {
             var passengerTicket = await this.context.PassengersTickets
-                .FirstOrDefaultAsync(pt => pt.PassengerId == passengerId && pt.TicketId == ticketId);
+                .FirstOrDefaultAsync(pt => pt.PassengerId == command.PassengerId 
+                                        && pt.TicketId == command.TicketId,
+                                        cancellationToken);
+
+            if (passengerTicket == null)
+                return false;
 
             this.context.Remove(passengerTicket);
-            await this.context.SaveChangesAsync();
+            await this.context.SaveChangesAsync(cancellationToken);
 
             return true;
         }

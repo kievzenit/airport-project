@@ -137,11 +137,14 @@ namespace AirportProject.Controllers
         }
 
         [HttpDelete("ticket")]
-        public async Task<IActionResult> DeleteTicket(int passengerId, int ticketId)
+        public async Task<IActionResult> DeleteTicket(
+            int passengerId, int ticketId, CancellationToken cancellationToken)
         {
             try
             {
-                await this.Mediator.Send(new RemoveTicketFromPassengerCommand(passengerId, ticketId));
+                await this.Mediator.Send(
+                    new RemoveTicketFromPassengerCommand(passengerId, ticketId),
+                    cancellationToken);
 
                 return Ok();
             }

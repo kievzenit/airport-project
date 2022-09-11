@@ -1,6 +1,7 @@
 ﻿using AirportProject.Application.Passengers.Commands.AddTicketToPassenger;
 using AirportProject.Application.Passengers.Commands.CreatePassenger;
 using AirportProject.Application.Passengers.Commands.DeletePassenger;
+using AirportProject.Application.Passengers.Commands.RemoveTicketFromPassenger;
 using AirportProject.Application.Passengers.Commands.UpdatePassenger;
 using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
 using AirportProject.Domain.DTOs;
@@ -25,7 +26,8 @@ namespace AirportProject.Application.Abstract
 
         public Task<bool> AddTicket(
             AddTicketToPassengerCommand command, CancellationToken cancellationToken);
-        public Task<bool> DeleteTicket(int passengerId, int ticketId);
+        public Task<bool> DeleteTicket(
+            RemoveTicketFromPassengerCommand command, CancellationToken cancellationToken);
 
         public Task<int> GetTotalCount(CancellationToken cancellationToken);
     }

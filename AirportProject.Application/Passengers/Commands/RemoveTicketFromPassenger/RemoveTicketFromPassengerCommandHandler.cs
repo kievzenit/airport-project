@@ -19,12 +19,12 @@ namespace AirportProject.Application.Passengers.Commands.RemoveTicketFromPasseng
         public async Task<Unit> Handle(
             RemoveTicketFromPassengerCommand request, CancellationToken cancellationToken)
         {
-            if (request.TicketId <= 0 && request.PassengerId <= 0)
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Input data was not in correct format");
             }
 
-            var success = await this.repository.DeleteTicket(request.PassengerId, request.TicketId);
+            var success = await this.repository.DeleteTicket(request, cancellationToken);
 
             if (!success)
             {
