@@ -1,7 +1,5 @@
-﻿using AirportProject.Domain.DTOs;
-using AirportProject.Domain.Models;
+﻿using AirportProject.Domain.Models;
 using AirportProject.Application.Common.Abstract;
-using AirportProject.Infrastructure.Persistent.Casting;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +22,12 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
         public async Task<Airport> Create(
             CreateAirportCommand createAirportCommand, CancellationToken cancellationToken)
         {
-            var airport = await createAirportCommand.ToAirport();
+            var airport = new Airport
+            {
+                Name = createAirportCommand.Name,
+                City = createAirportCommand.City,
+                Country = createAirportCommand.Country
+            };
 
             await this.context.AddAsync(airport, cancellationToken);
             await this.context.SaveChangesAsync(cancellationToken);
