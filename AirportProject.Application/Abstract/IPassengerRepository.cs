@@ -4,6 +4,7 @@ using AirportProject.Application.Passengers.Commands.DeletePassenger;
 using AirportProject.Application.Passengers.Commands.RemoveTicketFromPassenger;
 using AirportProject.Application.Passengers.Commands.UpdatePassenger;
 using AirportProject.Application.Passengers.Queries.GetPassengerByPassport;
+using AirportProject.Application.Passengers.Queries.GetPassengersByFirstname;
 using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
@@ -23,7 +24,8 @@ namespace AirportProject.Application.Abstract
 
         public Task<Passenger> SearchByPassport(
             GetPassengerByPassportQuery query, CancellationToken cancellationToken);
-        public Task<ICollection<PassengerDTO>> SearchByFirstname(string firstname);
+        public Task<ICollection<Passenger>> SearchByFirstname(
+            GetPassengersByFirstnameQuery query, CancellationToken cancellationToken);
         public Task<ICollection<PassengerDTO>> SearchByLastname(string lastname);
 
         public Task<bool> AddTicket(
