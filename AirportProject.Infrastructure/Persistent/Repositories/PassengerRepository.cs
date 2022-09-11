@@ -4,6 +4,7 @@ using AirportProject.Application.Passengers.Commands.CreatePassenger;
 using AirportProject.Application.Passengers.Commands.DeletePassenger;
 using AirportProject.Application.Passengers.Commands.RemoveTicketFromPassenger;
 using AirportProject.Application.Passengers.Commands.UpdatePassenger;
+using AirportProject.Application.Passengers.Queries.GetPassengerByPassport;
 using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
 using AirportProject.Domain.DTOs;
 using AirportProject.Domain.Models;
@@ -141,19 +142,13 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return true;
         }
 
-        public async Task<PassengerDTO> SearchByPassport(string passport)
+        public async Task<Passenger> SearchByPassport(
+            GetPassengerByPassportQuery query, CancellationToken cancellationToken)
         {
             var passenger = await this.context.Passengers
-                .FirstOrDefaultAsync(p => p.Passport == passport);
+                .FirstOrDefaultAsync(p => p.Passport == query.Passport, cancellationToken);
 
-            if (passenger == null)
-            {
-                return default;
-            }
-
-            var passengerDTO = await passenger.ToPassengerDTO();
-
-            return passengerDTO;
+            return passenger;
         }
 
         public async Task<ICollection<PassengerDTO>> SearchByFirstname(string firstname)

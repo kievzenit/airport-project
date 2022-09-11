@@ -163,11 +163,14 @@ namespace AirportProject.Controllers
         }
 
         [HttpGet("search/byPassport/{passport}")]
-        public async Task<IActionResult> SearchByPassport(string passport)
+        public async Task<IActionResult> SearchByPassport(
+            string passport, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await this.Mediator.Send(new GetPassengerByPassportQuery(passport));
+                var response = await this.Mediator.Send(
+                    new GetPassengerByPassportQuery(passport),
+                    cancellationToken);
 
                 return Ok(response);
             }

@@ -1,4 +1,5 @@
 ﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Casting;
 using AirportProject.Application.Exceptions;
 using AirportProject.Domain.DTOs;
 using MediatR;
@@ -13,28 +14,30 @@ namespace AirportProject.Application.Passengers.Queries.GetPassengerByPassport
         IRequestHandler<GetPassengerByPassportQuery, PassengerDTO>
     {
         private readonly IPassengerRepository repository;
+        private readonly PassengersCaster caster;
 
-        public GetPassengerByPassportQueryHandler(IPassengerRepository repository)
+        public GetPassengerByPassportQueryHandler(IPassengerRepository repository, PassengersCaster caster)
         {
             this.repository = repository;
+            this.caster = caster;
         }
 
         public async Task<PassengerDTO> Handle(
             GetPassengerByPassportQuery request, CancellationToken cancellationToken)
         {
-            if (request.Passport == null
-                || request.Passport.Length != 8
-                || !Regex.IsMatch(request.Passport, "^[a-z]{2}\\d{6}$"))
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Input data was not in correct format");
             }
 
-            var passengerDTO = await this.repository.SearchByPassport(request.Passport);
+            var passenger = await this.repository.SearchByPassport(request, cancellationToken);
 
-            if (passengerDTO == null)
+            if (passenger == null)
             {
                 throw new NotFoundException($"Passenger with passport: {request.Passport} was not found");
             }
+
+            var passengerDTO = await this.caster.Cast(passenger);
 
             return passengerDTO;
         }
