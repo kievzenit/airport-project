@@ -1,4 +1,5 @@
 ﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Casting;
 using AirportProject.Domain.DTOs;
 using MediatR;
 using System;
@@ -12,23 +13,25 @@ namespace AirportProject.Application.Passengers.Queries.GetPassengersByLastname
         IRequestHandler<GetPassengersByLastnameQuery, IEnumerable<PassengerDTO>>
     {
         private readonly IPassengerRepository repository;
+        private readonly PassengersCaster caster;
 
-        public GetPassengersByLastnameQueryHandler(IPassengerRepository repository)
+        public GetPassengersByLastnameQueryHandler(IPassengerRepository repository, PassengersCaster caster)
         {
             this.repository = repository;
+            this.caster = caster;
         }
 
         public async Task<IEnumerable<PassengerDTO>> Handle(
             GetPassengersByLastnameQuery request, CancellationToken cancellationToken)
         {
-            if (request.Lastname == null
-                || request.Lastname.Length > 50
-                || request.Lastname.Length == 0)
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Input data was not in correct format");
             }
 
-            return await this.repository.SearchByLastname(request.Lastname);
+            var passengers = await this.repository.SearchByLastname(request, cancellationToken);
+
+            return await this.caster.Cast(passengers);
         }
     }
 }

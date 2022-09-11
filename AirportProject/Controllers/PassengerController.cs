@@ -211,11 +211,13 @@ namespace AirportProject.Controllers
         }
 
         [HttpGet("search/byLastname/{lastname}")]
-        public async Task<IActionResult> SearchByLastname(string lastname)
+        public async Task<IActionResult> SearchByLastname(string lastname, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await this.Mediator.Send(new GetPassengersByLastnameQuery(lastname));
+                var response = await this.Mediator.Send(
+                    new GetPassengersByLastnameQuery(lastname),
+                    cancellationToken);
 
                 return Ok(response);
             }

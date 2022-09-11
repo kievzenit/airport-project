@@ -1,15 +1,18 @@
 ﻿using AirportProject.Application.Abstract;
+
 using AirportProject.Application.Passengers.Commands.AddTicketToPassenger;
 using AirportProject.Application.Passengers.Commands.CreatePassenger;
 using AirportProject.Application.Passengers.Commands.DeletePassenger;
 using AirportProject.Application.Passengers.Commands.RemoveTicketFromPassenger;
 using AirportProject.Application.Passengers.Commands.UpdatePassenger;
+
 using AirportProject.Application.Passengers.Queries.GetPassengerByPassport;
 using AirportProject.Application.Passengers.Queries.GetPassengersByFirstname;
+using AirportProject.Application.Passengers.Queries.GetPassengersByLastname;
 using AirportProject.Application.Passengers.Queries.GetPassengersWithPagination;
-using AirportProject.Domain.DTOs;
+
 using AirportProject.Domain.Models;
-using AirportProject.Infrastructure.Persistent.Casting;
+
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -118,7 +121,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             {
                 Passenger = passenger,
                 Ticket = ticket
-            };            
+            };
 
             await this.context.AddAsync(passengerTicket, cancellationToken);
             await this.context.SaveChangesAsync(cancellationToken);
@@ -130,7 +133,7 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             RemoveTicketFromPassengerCommand command, CancellationToken cancellationToken)
         {
             var passengerTicket = await this.context.PassengersTickets
-                .FirstOrDefaultAsync(pt => pt.PassengerId == command.PassengerId 
+                .FirstOrDefaultAsync(pt => pt.PassengerId == command.PassengerId
                                         && pt.TicketId == command.TicketId,
                                         cancellationToken);
 
@@ -162,15 +165,14 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return passengers;
         }
 
-        public async Task<ICollection<PassengerDTO>> SearchByLastname(string lastname)
+        public async Task<ICollection<Passenger>> SearchByLastname(
+            GetPassengersByLastnameQuery query, CancellationToken cancellationToken)
         {
             var passengers = await this.context.Passengers
-                .Where(p => p.Lastname == lastname)
-                .ToListAsync();
+                .Where(p => p.Lastname == query.Lastname)
+                .ToListAsync(cancellationToken);
 
-            var passengerDTOs = await passengers.ToPassengerDTOs();
-
-            return passengerDTOs;
+            return passengers;
         }
 
         public async Task<int> GetTotalCount(CancellationToken cancellationToken)
