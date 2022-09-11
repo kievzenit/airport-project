@@ -1,6 +1,6 @@
 ﻿using AirportProject.Application.Common.Abstract;
 using AirportProject.Application.Common.Casting;
-using AirportProject.Application.Exceptions;
+using AirportProject.Application.Common.Exceptions;
 using AirportProject.Domain.DTOs;
 using MediatR;
 using System;

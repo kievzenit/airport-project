@@ -1,6 +1,6 @@
 ﻿using AirportProject.Application.Common.Abstract;
 using AirportProject.Application.Airports.Command.UpdateAirport;
-using AirportProject.Application.Exceptions;
+using AirportProject.Application.Common.Exceptions;
 using MediatR;
 using System;
 using System.Threading;

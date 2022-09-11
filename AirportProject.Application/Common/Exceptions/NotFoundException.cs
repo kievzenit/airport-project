@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AirportProject.Application.Exceptions
+namespace AirportProject.Application.Common.Exceptions
 {
     public class NotFoundException : ApplicationException
     {

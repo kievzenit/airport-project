@@ -2,7 +2,7 @@
 using AirportProject.Application.Airports.Commands.DeleteAirport;
 using AirportProject.Application.Airports.Commands.UpdateAirport;
 using AirportProject.Application.Airports.Queries.GetAirportsWithPagination;
-using AirportProject.Application.Exceptions;
+using AirportProject.Application.Common.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading;

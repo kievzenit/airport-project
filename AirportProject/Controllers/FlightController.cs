@@ -1,4 +1,4 @@
-﻿using AirportProject.Application.Exceptions;
+﻿using AirportProject.Application.Common.Exceptions;
 
 using AirportProject.Application.Flights.Commands.CreateFlight;
 using AirportProject.Application.Flights.Commands.DeleteFlight;
