@@ -12,6 +12,7 @@ namespace AirportProject.Application
             serviceCollection.AddMediatR(Assembly.GetExecutingAssembly());
             serviceCollection.AddScoped<FlightsCaster>();
             serviceCollection.AddScoped<PassengersCaster>();
+            serviceCollection.AddScoped<TicketsCaster>();
         }
     }
 }

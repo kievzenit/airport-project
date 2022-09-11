@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AirportProject.Application.Tickets.Queries.GetTicketsByPassengerId;
+using System.Threading;
 
 namespace AirportProject.Infrastructure.Persistent.Repositories
 {
@@ -38,46 +40,18 @@ namespace AirportProject.Infrastructure.Persistent.Repositories
             return await tickets.ToTicktDTOs();
         }
 
-        public async Task<ICollection<TicketDTO>> GetTickets(int passengerId)
+        public async Task<ICollection<Ticket>> GetTickets(
+            GetTicketsByPassengerIdQuery query, CancellationToken cancellationToken)
         {
             var passenger = await this.context.Passengers
-                .FirstOrDefaultAsync(p => p.Id == passengerId);
+                .FirstOrDefaultAsync(p => p.Id == query.PassengerId, cancellationToken);
 
-            if (passenger == null)
-            {
-                return default;
-            }
-
-            return await this.GetTicketDTOs(passenger);
-        }
-
-        private async Task<ICollection<TicketDTO>> GetTicketDTOs(Passenger passenger)
-        {
             var tickets = await this.context.PassengersTickets
                 .Where(pt => pt.Passenger == passenger)
                 .Select(pt => pt.Ticket)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
-            var ticketDTOs = new List<TicketDTO>();
-
-            foreach (var ticket in tickets)
-            {
-                var ticketDTO = new TicketDTO
-                {
-                    From = ticket.Flight.DepartureAirport.Name,
-                    To = ticket.Flight.ArrivalAirport.Name,
-                    Type = ticket.Type,
-                    Id = ticket.Id,
-                    FlightId = ticket.FlightId,
-                    ArrivalTime = ticket.Flight.ArrivalTime,
-                    DepartureTime = ticket.Flight.DepartureTime,
-                    Price = ticket.Price
-                };
-
-                ticketDTOs.Add(ticketDTO);
-            }
-
-            return ticketDTOs;
+            return tickets;
         }
     }
 }

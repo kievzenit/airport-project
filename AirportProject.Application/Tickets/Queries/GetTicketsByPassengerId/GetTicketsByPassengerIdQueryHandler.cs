@@ -1,4 +1,5 @@
 ﻿using AirportProject.Application.Abstract;
+using AirportProject.Application.Casting;
 using AirportProject.Domain.DTOs;
 using MediatR;
 using System;
@@ -12,21 +13,25 @@ namespace AirportProject.Application.Tickets.Queries.GetTicketsByPassengerId
         IRequestHandler<GetTicketsByPassengerIdQuery, IEnumerable<TicketDTO>>
     {
         private readonly ITicketRepository repository;
+        private readonly TicketsCaster caster;
 
-        public GetTicketsByPassengerIdQueryHandler(ITicketRepository repository)
+        public GetTicketsByPassengerIdQueryHandler(ITicketRepository repository, TicketsCaster caster)
         {
             this.repository = repository;
+            this.caster = caster;
         }
 
         public async Task<IEnumerable<TicketDTO>> Handle(
             GetTicketsByPassengerIdQuery request, CancellationToken cancellationToken)
         {
-            if (request.PassengerId <= 0)
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Passenger id must be not equal or less than zero");
             }
 
-            return await this.repository.GetTickets(request.PassengerId);
+            var tickets = await this.repository.GetTickets(request, cancellationToken);
+
+            return await this.caster.Cast(tickets);
         }
     }
 }

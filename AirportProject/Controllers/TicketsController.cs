@@ -2,6 +2,7 @@
 using AirportProject.Application.Tickets.Queries.GetTicketsByPassengerId;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AirportProject.Controllers
@@ -9,11 +10,13 @@ namespace AirportProject.Controllers
     public class TicketsController : BaseApiController
     {
         [HttpGet("passenger/{passengerId}")]
-        public async Task<IActionResult> GetTickets(int passengerId)
+        public async Task<IActionResult> GetTickets(int passengerId, CancellationToken cancellationToken)
         {
             try
             {
-                var response = await this.Mediator.Send(new GetTicketsByPassengerIdQuery(passengerId));
+                var response = await this.Mediator.Send(
+                    new GetTicketsByPassengerIdQuery(passengerId),
+                    cancellationToken);
 
                 return Ok(response);
             }
