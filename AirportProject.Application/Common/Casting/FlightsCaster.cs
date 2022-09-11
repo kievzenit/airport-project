@@ -1,5 +1,5 @@
 ﻿using AirportProject.Application.Common.Abstract;
-using AirportProject.Domain.DTOs;
+using AirportProject.Application.Common.DTOs;
 using AirportProject.Domain.Models;
 using System;
 using System.Collections.Generic;

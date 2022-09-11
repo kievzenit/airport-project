@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AirportProject.Domain.DTOs
+namespace AirportProject.Application.Common.DTOs
 {
     public class AirportDTO : DTO
     {

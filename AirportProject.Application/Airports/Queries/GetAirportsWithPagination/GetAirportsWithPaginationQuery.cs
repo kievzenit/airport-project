@@ -1,4 +1,4 @@
-﻿using AirportProject.Domain.DTOs;
+﻿using AirportProject.Application.Common.DTOs;
 using MediatR;
 
 namespace AirportProject.Application.Airports.Queries.GetAirportsWithPagination

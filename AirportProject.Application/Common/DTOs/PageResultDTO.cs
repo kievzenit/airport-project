@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace AirportProject.Domain.DTOs
+namespace AirportProject.Application.Common.DTOs
 {
     public class PageResultDTO<TItems>
         where TItems : DTO
