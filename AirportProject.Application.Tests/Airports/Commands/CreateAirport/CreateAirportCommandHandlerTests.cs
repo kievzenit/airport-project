@@ -63,8 +63,8 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
         public void Test_HandleMethod_When_InputDataIsEmpty_Then_ShouldThrowArgumentException()
         {
             // arrange
-            var mockRepository = new Mock<IAirportRepository>();
-            var mockCaster = new Mock<ICaster<Airport, AirportDTO>>();
+            var mockRepository = new Mock<IAirportRepository>(MockBehavior.Strict);
+            var mockCaster = new Mock<ICaster<Airport, AirportDTO>>(MockBehavior.Strict);
 
             var command = new CreateAirportCommand
             {
@@ -80,13 +80,6 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
 
             // assert
             Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(command, cancellationToken));
-
-            mockRepository.Verify(f =>
-                f.Create(It.IsAny<CreateAirportCommand>(), It.IsAny<CancellationToken>()),
-                Times.Never);
-            mockRepository.Verify(f =>
-                f.DoesAirportExists(It.IsAny<string>(), It.IsAny<CancellationToken>()),
-                Times.Never);
         }
 
         [TestMethod]
