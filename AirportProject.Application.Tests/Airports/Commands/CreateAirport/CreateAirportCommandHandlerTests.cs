@@ -57,6 +57,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
             // assert
             Assert.AreEqual(expected, actual);
             mockRepository.Verify(f => f.Create(command, cancellationToken), Times.Once);
+            mockRepository.Verify(f => f.DoesAirportExists(command.Name, cancellationToken), Times.Once);
         }
 
         [TestMethod]
