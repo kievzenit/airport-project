@@ -1,6 +1,6 @@
 ﻿using AirportProject.Application.Common.Abstract;
-using AirportProject.Application.Common.Casting;
 using AirportProject.Application.Common.DTOs;
+using AirportProject.Domain.Models;
 using MediatR;
 using System;
 using System.Threading;
@@ -12,9 +12,10 @@ namespace AirportProject.Application.Flights.Queries.GetFlightsWithPagination
         IRequestHandler<GetFlightsWithPaginationQuery, PageResultDTO<FlightDTO>>
     {
         private readonly IFlightRepository repository;
-        private readonly FlightsCaster caster;
+        private readonly ICaster<Flight, FlightDTO> caster;
 
-        public GetFlightsWithPaginationQueryHandler(IFlightRepository repository, FlightsCaster caster)
+        public GetFlightsWithPaginationQueryHandler(
+            IFlightRepository repository, ICaster<Flight, FlightDTO> caster)
         {
             this.repository = repository;
             this.caster = caster;

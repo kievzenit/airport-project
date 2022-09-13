@@ -1,6 +1,6 @@
 ﻿using AirportProject.Application.Common.Abstract;
-using AirportProject.Application.Common.Casting;
 using AirportProject.Application.Common.DTOs;
+using AirportProject.Domain.Models;
 using MediatR;
 using System;
 using System.Threading;
@@ -12,10 +12,10 @@ namespace AirportProject.Application.Passengers.Queries.GetPassengersWithPaginat
         IRequestHandler<GetPassengersWithPaginationQuery, PageResultDTO<PassengerDTO>>
     {
         private readonly IPassengerRepository repository;
-        private readonly PassengersCaster caster;
+        private readonly ICaster<Passenger, PassengerDTO> caster;
 
         public GetPassengersWithPaginatonQueryHandler(
-            IPassengerRepository repository, PassengersCaster caster)
+            IPassengerRepository repository, ICaster<Passenger, PassengerDTO> caster)
         {
             this.repository = repository;
             this.caster = caster;
@@ -32,7 +32,7 @@ namespace AirportProject.Application.Passengers.Queries.GetPassengersWithPaginat
             var passengers = await this.repository.GetRange(request, cancellationToken);
             var totalCount = await this.repository.GetTotalCount(cancellationToken);
 
-            var passengerDTOs = await this.caster.Cast(passengers);
+            var passengerDTOs = await this.caster.Cast(passengers, cancellationToken);
 
             return new PageResultDTO<PassengerDTO>(passengerDTOs, totalCount);
         }

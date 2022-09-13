@@ -1,6 +1,6 @@
 ﻿using AirportProject.Application.Common.Abstract;
-using AirportProject.Application.Common.Casting;
 using AirportProject.Application.Common.DTOs;
+using AirportProject.Domain.Models;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -13,9 +13,10 @@ namespace AirportProject.Application.Passengers.Queries.GetPassengersByLastname
         IRequestHandler<GetPassengersByLastnameQuery, IEnumerable<PassengerDTO>>
     {
         private readonly IPassengerRepository repository;
-        private readonly PassengersCaster caster;
+        private readonly ICaster<Passenger, PassengerDTO> caster;
 
-        public GetPassengersByLastnameQueryHandler(IPassengerRepository repository, PassengersCaster caster)
+        public GetPassengersByLastnameQueryHandler(
+            IPassengerRepository repository, ICaster<Passenger, PassengerDTO> caster)
         {
             this.repository = repository;
             this.caster = caster;
@@ -31,7 +32,7 @@ namespace AirportProject.Application.Passengers.Queries.GetPassengersByLastname
 
             var passengers = await this.repository.SearchByLastname(request, cancellationToken);
 
-            return await this.caster.Cast(passengers);
+            return await this.caster.Cast(passengers, cancellationToken);
         }
     }
 }

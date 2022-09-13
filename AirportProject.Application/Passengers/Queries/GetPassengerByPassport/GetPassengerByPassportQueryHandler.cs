@@ -1,10 +1,9 @@
 ﻿using AirportProject.Application.Common.Abstract;
-using AirportProject.Application.Common.Casting;
-using AirportProject.Application.Common.Exceptions;
 using AirportProject.Application.Common.DTOs;
+using AirportProject.Application.Common.Exceptions;
+using AirportProject.Domain.Models;
 using MediatR;
 using System;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,9 +13,10 @@ namespace AirportProject.Application.Passengers.Queries.GetPassengerByPassport
         IRequestHandler<GetPassengerByPassportQuery, PassengerDTO>
     {
         private readonly IPassengerRepository repository;
-        private readonly PassengersCaster caster;
+        private readonly ICaster<Passenger, PassengerDTO> caster;
 
-        public GetPassengerByPassportQueryHandler(IPassengerRepository repository, PassengersCaster caster)
+        public GetPassengerByPassportQueryHandler(
+            IPassengerRepository repository, ICaster<Passenger, PassengerDTO> caster)
         {
             this.repository = repository;
             this.caster = caster;
@@ -37,7 +37,7 @@ namespace AirportProject.Application.Passengers.Queries.GetPassengerByPassport
                 throw new NotFoundException($"Passenger with passport: {request.Passport} was not found");
             }
 
-            var passengerDTO = await this.caster.Cast(passenger);
+            var passengerDTO = await this.caster.Cast(passenger, cancellationToken);
 
             return passengerDTO;
         }

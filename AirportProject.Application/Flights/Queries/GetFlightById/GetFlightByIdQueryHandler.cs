@@ -1,12 +1,9 @@
 ﻿using AirportProject.Application.Common.Abstract;
-using AirportProject.Application.Common.Casting;
-using AirportProject.Application.Common.Exceptions;
 using AirportProject.Application.Common.DTOs;
+using AirportProject.Application.Common.Exceptions;
+using AirportProject.Domain.Models;
 using MediatR;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,9 +12,9 @@ namespace AirportProject.Application.Flights.Queries.GetFlightById
     public class GetFlightByIdQueryHandler : IRequestHandler<GetFlightByIdQuery, FlightDTO>
     {
         private readonly IFlightRepository repository;
-        private readonly FlightsCaster caster;
+        private readonly ICaster<Flight, FlightDTO> caster;
 
-        public GetFlightByIdQueryHandler(IFlightRepository repository, FlightsCaster caster)
+        public GetFlightByIdQueryHandler(IFlightRepository repository, ICaster<Flight, FlightDTO> caster)
         {
             this.repository = repository;
             this.caster = caster;

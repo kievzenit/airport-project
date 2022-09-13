@@ -1,6 +1,6 @@
 ﻿using AirportProject.Application.Common.Abstract;
-using AirportProject.Application.Common.Casting;
 using AirportProject.Application.Common.DTOs;
+using AirportProject.Domain.Models;
 using MediatR;
 using System;
 using System.Threading;
@@ -11,9 +11,10 @@ namespace AirportProject.Application.Passengers.Commands.CreatePassenger
     public class CtreatePassengerCommandHandler : IRequestHandler<CreatePassengerCommand, PassengerDTO>
     {
         private readonly IPassengerRepository repository;
-        private readonly PassengersCaster caster;
+        private readonly ICaster<Passenger, PassengerDTO> caster;
 
-        public CtreatePassengerCommandHandler(IPassengerRepository repository, PassengersCaster caster)
+        public CtreatePassengerCommandHandler(
+            IPassengerRepository repository, ICaster<Passenger, PassengerDTO> caster)
         {
             this.repository = repository;
             this.caster = caster;
@@ -29,7 +30,7 @@ namespace AirportProject.Application.Passengers.Commands.CreatePassenger
 
             var passenger = await this.repository.Create(request, cancellationToken);
 
-            return await this.caster.Cast(passenger);
+            return await this.caster.Cast(passenger, cancellationToken);
         }
     }
 }

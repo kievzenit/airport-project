@@ -1,6 +1,6 @@
 ﻿using AirportProject.Application.Common.Abstract;
-using AirportProject.Application.Common.Casting;
 using AirportProject.Application.Common.DTOs;
+using AirportProject.Domain.Models;
 using MediatR;
 using System;
 using System.Threading;
@@ -11,9 +11,9 @@ namespace AirportProject.Application.Flights.Commands.CreateFlight
     public class CreateFlightCommandHandler : IRequestHandler<CreateFlightCommand, FlightDTO>
     {
         private readonly IFlightRepository repository;
-        private readonly FlightsCaster caster;
+        private readonly ICaster<Flight, FlightDTO> caster;
 
-        public CreateFlightCommandHandler(IFlightRepository repository, FlightsCaster caster)
+        public CreateFlightCommandHandler(IFlightRepository repository, ICaster<Flight, FlightDTO> caster)
         {
             this.repository = repository;
             this.caster = caster;

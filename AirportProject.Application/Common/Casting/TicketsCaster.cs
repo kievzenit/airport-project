@@ -2,20 +2,14 @@
 using AirportProject.Application.Common.DTOs;
 using AirportProject.Domain.Models;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AirportProject.Application.Common.Casting
 {
-    public class TicketsCaster
+    public class TicketsCaster : ICaster<Ticket, TicketDTO>
     {
-        private readonly ITicketRepository repository;
-
-        public TicketsCaster(ITicketRepository repository)
-        {
-            this.repository = repository;
-        }
-
-        public Task<TicketDTO> Cast(Ticket ticket)
+        public Task<TicketDTO> Cast(Ticket ticket, CancellationToken cancellationToken)
         {
             return Task.FromResult(new TicketDTO
             {
@@ -30,13 +24,14 @@ namespace AirportProject.Application.Common.Casting
             });
         }
 
-        public async Task<ICollection<TicketDTO>> Cast(ICollection<Ticket> tickets)
+        public async Task<ICollection<TicketDTO>> Cast(
+            ICollection<Ticket> tickets, CancellationToken cancellationToken)
         {
             var ticketDTOs = new List<TicketDTO>(tickets.Count);
 
             foreach (var ticket in tickets)
             {
-                var ticketDTO = await this.Cast(ticket);
+                var ticketDTO = await this.Cast(ticket, cancellationToken);
 
                 ticketDTOs.Add(ticketDTO);
             }

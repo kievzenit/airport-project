@@ -1,6 +1,6 @@
 ﻿using AirportProject.Application.Common.Abstract;
-using AirportProject.Application.Common.Casting;
 using AirportProject.Application.Common.DTOs;
+using AirportProject.Domain.Models;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -13,9 +13,9 @@ namespace AirportProject.Application.Tickets.Queries.GetSpecificTickets
         IRequestHandler<GetSpecificTicketsQuery, IEnumerable<TicketDTO>>
     {
         private readonly ITicketRepository repository;
-        private readonly TicketsCaster caster;
+        private readonly ICaster<Ticket, TicketDTO> caster;
 
-        public GetSpecificTicketsQueryHandler(ITicketRepository repository, TicketsCaster caster)
+        public GetSpecificTicketsQueryHandler(ITicketRepository repository, ICaster<Ticket, TicketDTO> caster)
         {
             this.repository = repository;
             this.caster = caster;
@@ -31,7 +31,7 @@ namespace AirportProject.Application.Tickets.Queries.GetSpecificTickets
 
             var tickets = await this.repository.GetTickets(request, cancellationToken);
 
-            return await this.caster.Cast(tickets);
+            return await this.caster.Cast(tickets, cancellationToken);
         }
     }
 }

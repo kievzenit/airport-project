@@ -1,16 +1,13 @@
 ﻿using AirportProject.Application.Common.Abstract;
 using AirportProject.Application.Common.DTOs;
 using AirportProject.Domain.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace AirportProject.Application.Common.Casting
 {
-    public class FlightsCaster
+    public class FlightsCaster : ICaster<Flight, FlightDTO>
     {
         private readonly IFlightRepository repository;
 

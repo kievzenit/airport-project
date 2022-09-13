@@ -1,6 +1,6 @@
 ﻿using AirportProject.Application.Common.Abstract;
-using AirportProject.Application.Common.Casting;
 using AirportProject.Application.Common.DTOs;
+using AirportProject.Domain.Models;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -13,9 +13,10 @@ namespace AirportProject.Application.Flights.Queries.GetFlightsByDepartureAirpor
         IRequestHandler<GetFlightsByDepartureAirportQuery, IEnumerable<FlightDTO>>
     {
         private readonly IFlightRepository repository;
-        private readonly FlightsCaster caster;
+        private readonly ICaster<Flight, FlightDTO> caster;
 
-        public GetFlightsByDepartureAirportQueryHandler(IFlightRepository repository, FlightsCaster caster)
+        public GetFlightsByDepartureAirportQueryHandler(
+            IFlightRepository repository, ICaster<Flight, FlightDTO> caster)
         {
             this.repository = repository;
             this.caster = caster;
