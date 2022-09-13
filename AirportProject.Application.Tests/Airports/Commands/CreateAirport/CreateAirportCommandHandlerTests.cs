@@ -17,7 +17,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
     public class CreateAirportCommandHandlerTests
     {
         [TestMethod]
-        public void Test_HandleMethod_ShoulReturn_ICollectionOfAirportDTOs()
+        public void Test_HandleMethod_ShouldReturn_ICollectionOfAirportDTOs()
         {
             // arrange
             var mockRepository = new Mock<IAirportRepository>();
