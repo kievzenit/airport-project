@@ -11,7 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirportProject.Domain", "Ai
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirportProject.Infrastructure", "AirportProject.Infrastructure\AirportProject.Infrastructure.csproj", "{101B6342-9B14-4271-BF09-D2AF41632067}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirportProject.Application", "AirportProject.Application\AirportProject.Application.csproj", "{E11FEDC7-4DFC-4207-ADD6-D071B0A72995}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirportProject.Application", "AirportProject.Application\AirportProject.Application.csproj", "{E11FEDC7-4DFC-4207-ADD6-D071B0A72995}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D76D32BF-7DE4-4A2E-B92E-4C43E16B767B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{47B4B75A-B0FA-44DB-908F-63CAA1DF7233}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +48,13 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D8C9C42C-21BF-495A-B1EF-F2969C6F3760} = {47B4B75A-B0FA-44DB-908F-63CAA1DF7233}
+		{E00981B3-975E-4D0A-9957-7C80E4C9931B} = {47B4B75A-B0FA-44DB-908F-63CAA1DF7233}
+		{91A93DA0-536B-4D69-AE39-4C6AF3635DB5} = {47B4B75A-B0FA-44DB-908F-63CAA1DF7233}
+		{101B6342-9B14-4271-BF09-D2AF41632067} = {47B4B75A-B0FA-44DB-908F-63CAA1DF7233}
+		{E11FEDC7-4DFC-4207-ADD6-D071B0A72995} = {47B4B75A-B0FA-44DB-908F-63CAA1DF7233}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A80B234C-77E2-4266-855F-06B4BC20A45D}
