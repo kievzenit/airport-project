@@ -1,8 +1,8 @@
 ﻿using AirportProject.Application.Common.Abstract;
 using AirportProject.Application.Common.DTOs;
+using AirportProject.Domain.Models;
 using MediatR;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,10 +12,13 @@ namespace AirportProject.Application.Airports.Queries.GetAirportsWithPagination
         IRequestHandler<GetAirportsWithPaginationQuery, PageResultDTO<AirportDTO>>
     {
         private readonly IAirportRepository repository;
+        private readonly ICaster<Airport, AirportDTO> caster;
 
-        public GetAirportsWithPaginationQueryHandler(IAirportRepository repository)
+        public GetAirportsWithPaginationQueryHandler(
+            IAirportRepository repository, ICaster<Airport, AirportDTO> caster)
         {
             this.repository = repository;
+            this.caster = caster;
         }
 
         public async Task<PageResultDTO<AirportDTO>> Handle(
@@ -31,20 +34,7 @@ namespace AirportProject.Application.Airports.Queries.GetAirportsWithPagination
                 request.PageNumber, request.PageSize, cancellationToken);
             var totalCount = await this.repository.GetTotalCount(cancellationToken);
 
-            var airportDTOs = new List<AirportDTO>();
-
-            foreach (var airport in airports)
-            {
-                var airportDTO = new AirportDTO
-                {
-                    Id = airport.Id,
-                    Name = airport.Name,
-                    Country = airport.Country,
-                    City = airport.City
-                };
-
-                airportDTOs.Add(airportDTO);
-            }
+            var airportDTOs = await this.caster.Cast(airports, cancellationToken);
 
             return new PageResultDTO<AirportDTO>(airportDTOs, totalCount);
         }

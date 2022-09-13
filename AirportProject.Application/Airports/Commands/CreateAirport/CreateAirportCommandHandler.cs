@@ -11,10 +11,12 @@ namespace AirportProject.Application.Airports.Commands.CreateAirport
     public class CreateAirportCommandHandler : IRequestHandler<CreateAirportCommand, AirportDTO>
     {
         private readonly IAirportRepository repository;
+        private readonly ICaster<Airport, AirportDTO> caster;
 
-        public CreateAirportCommandHandler(IAirportRepository repository)
+        public CreateAirportCommandHandler(IAirportRepository repository, ICaster<Airport, AirportDTO> caster)
         {
             this.repository = repository;
+            this.caster = caster;
         }
 
 
@@ -29,13 +31,7 @@ namespace AirportProject.Application.Airports.Commands.CreateAirport
 
             var airport = await repository.Create(request, cancellationToken);
 
-            return new AirportDTO
-            {
-                Id = airport.Id,
-                Name = airport.Name,
-                Country = airport.Country,
-                City = airport.City
-            };
+            return await this.caster.Cast(airport, cancellationToken);
         }
     }
 }

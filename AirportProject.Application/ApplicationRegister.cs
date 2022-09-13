@@ -14,6 +14,7 @@ namespace AirportProject.Application
         {
             serviceCollection.AddMediatR(Assembly.GetExecutingAssembly());
 
+            serviceCollection.AddScoped<ICaster<Airport, AirportDTO>, AirportsCaster>();
             serviceCollection.AddScoped<ICaster<Flight, FlightDTO>, FlightsCaster>();
             serviceCollection.AddScoped<ICaster<Passenger, PassengerDTO>, PassengersCaster>();
             serviceCollection.AddScoped<ICaster<Ticket, TicketDTO>, TicketsCaster>();
