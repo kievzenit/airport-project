@@ -16,8 +16,8 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
         public void Test_HandleMethod_ShouldReturnAirportDTO()
         {
             // arrange
-            var mockRepository = new Mock<IAirportRepository>();
-            var mockCaster = new Mock<ICaster<Airport, AirportDTO>>();
+            var mockRepository = new Mock<IAirportRepository>(MockBehavior.Strict);
+            var mockCaster = new Mock<ICaster<Airport, AirportDTO>>(MockBehavior.Strict);
 
             var command = new CreateAirportCommand
             {
@@ -44,6 +44,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
             var cancellationToken = cancellationSource.Token;
 
             mockRepository.Setup(f => f.Create(command, cancellationToken)).ReturnsAsync(airport);
+            mockRepository.Setup(f => f.DoesAirportExists(command.Name, cancellationToken)).ReturnsAsync(false);
             mockCaster.Setup(f => f.Cast(airport, cancellationToken)).ReturnsAsync(airportDTO);
 
             var handler = new CreateAirportCommandHandler(mockRepository.Object, mockCaster.Object);
@@ -56,7 +57,6 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
             // assert
             Assert.AreEqual(expected, actual);
             mockRepository.Verify(f => f.Create(command, cancellationToken), Times.Once);
-            mockCaster.Verify(f => f.Cast(airport, cancellationToken), Times.Once);
         }
 
         [TestMethod]
