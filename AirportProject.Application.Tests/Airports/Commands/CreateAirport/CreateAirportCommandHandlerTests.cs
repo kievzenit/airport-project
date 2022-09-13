@@ -88,5 +88,28 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
                 f.DoesAirportExists(It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
+
+        [TestMethod]
+        public void Test_HandleMethod_When_InputDataIsInvalid_Then_ShouldThrowArgumentException()
+        {
+            // arrange
+            var mockRepository = new Mock<IAirportRepository>(MockBehavior.Strict);
+            var mockCaster = new Mock<ICaster<Airport, AirportDTO>>(MockBehavior.Strict);
+
+            var command = new CreateAirportCommand
+            {
+                Name = new string('a', 51),
+                City = new string('a', 51),
+                Country = new string('a', 51)
+            };
+
+            var cancellationSource = new CancellationTokenSource();
+            var cancellationToken = cancellationSource.Token;
+
+            var handler = new CreateAirportCommandHandler(mockRepository.Object, mockCaster.Object);
+
+            // assert
+            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(command, cancellationToken));
+        }
     }
 }
