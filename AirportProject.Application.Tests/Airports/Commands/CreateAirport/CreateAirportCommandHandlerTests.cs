@@ -13,7 +13,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
     public class CreateAirportCommandHandlerTests
     {
         [TestMethod]
-        public void Test_HandleMethod_Should_ReturnAirportDTO()
+        public void Test_HandleMethod_ShouldReturnAirportDTO()
         {
             // arrange
             var mockRepository = new Mock<IAirportRepository>();
@@ -60,7 +60,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
         }
 
         [TestMethod]
-        public void Test_HandleMethod_WhenInputDataIsEmpty_Then_Should_ThrowArgumentException()
+        public void Test_HandleMethod_When_InputDataIsEmpty_Then_ShouldThrowArgumentException()
         {
             // arrange
             var mockRepository = new Mock<IAirportRepository>();
