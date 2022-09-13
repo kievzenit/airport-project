@@ -5,11 +5,7 @@ using AirportProject.Domain.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
 {
@@ -61,6 +57,36 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
             Assert.AreEqual(expected, actual);
             mockRepository.Verify(f => f.Create(command, cancellationToken), Times.Once);
             mockCaster.Verify(f => f.Cast(airport, cancellationToken), Times.Once);
+        }
+
+        [TestMethod]
+        public void Test_HandleMethod_WhenInputDataIsEmpty_Then_Should_ThrowArgumentException()
+        {
+            // arrange
+            var mockRepository = new Mock<IAirportRepository>();
+            var mockCaster = new Mock<ICaster<Airport, AirportDTO>>();
+
+            var command = new CreateAirportCommand
+            {
+                Name = "",
+                City = "",
+                Country = ""
+            };
+
+            var cancellationSource = new CancellationTokenSource();
+            var cancellationToken = cancellationSource.Token;
+
+            var handler = new CreateAirportCommandHandler(mockRepository.Object, mockCaster.Object);
+
+            // assert
+            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(command, cancellationToken));
+
+            mockRepository.Verify(f =>
+                f.Create(It.IsAny<CreateAirportCommand>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+            mockRepository.Verify(f =>
+                f.DoesAirportExists(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+                Times.Never);
         }
     }
 }
