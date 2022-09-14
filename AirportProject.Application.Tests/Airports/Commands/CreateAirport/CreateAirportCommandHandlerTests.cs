@@ -13,7 +13,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
     public class CreateAirportCommandHandlerTests
     {
         [TestMethod]
-        public void Test_HandleMethod_ShouldReturnAirportDTO()
+        public void Test_HandleMethod_When_InputDataIsValid_Then_ShouldReturnAirportDTO()
         {
             // arrange
             var mockRepository = new Mock<IAirportRepository>(MockBehavior.Strict);
