@@ -25,7 +25,7 @@ namespace AirportProject.Application.Airports.Queries.GetAirportsWithPagination
             GetAirportsWithPaginationQuery request,
             CancellationToken cancellationToken)
         {
-            if (request.PageNumber <= 0)
+            if (!request.IsValid())
             {
                 throw new ArgumentException("Page number must be not equal or less than zero");
             }
