@@ -12,7 +12,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.DeleteAirport
     public class DeleteAirportCommandHandlerTest
     {
         [TestMethod]
-        public void Test_HandleMethod_When_DataIsValid_Then_ShouldFinishedWithoutExceptions()
+        public void Test_HandleMethod_When_DataIsValidAndAirportExists_Then_ShouldFinishedWithoutExceptions()
         {
             // arrange
             var mockRepository = new Mock<IAirportRepository>(MockBehavior.Strict);
@@ -35,7 +35,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.DeleteAirport
         }
 
         [TestMethod]
-        public void Test_HandleMethod_When_DataIsInValid_Then_ShouldThrowArgumentException()
+        public void Test_HandleMethod_When_DataIsInvalid_Then_ShouldThrowArgumentException()
         {
             // arrange
             var mockRepository = new Mock<IAirportRepository>(MockBehavior.Strict);
