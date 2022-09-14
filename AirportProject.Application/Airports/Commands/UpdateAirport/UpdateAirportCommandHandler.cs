@@ -1,5 +1,4 @@
 ﻿using AirportProject.Application.Common.Abstract;
-using AirportProject.Application.Airports.Command.UpdateAirport;
 using AirportProject.Application.Common.Exceptions;
 using MediatR;
 using System;
@@ -18,7 +17,7 @@ namespace AirportProject.Application.Airports.Commands.UpdateAirport
         }
 
         public async Task<Unit> Handle(
-            UpdateAirportCommand request, 
+            UpdateAirportCommand request,
             CancellationToken cancellationToken)
         {
             if (!request.IsValid())

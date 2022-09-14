@@ -1,6 +1,4 @@
-﻿using AirportProject.Application.Airports.Commands.UpdateAirport;
-
-namespace AirportProject.Application.Airports.Command.UpdateAirport
+﻿namespace AirportProject.Application.Airports.Commands.UpdateAirport
 {
     public static class UpdateAirportCommandValidator
     {
