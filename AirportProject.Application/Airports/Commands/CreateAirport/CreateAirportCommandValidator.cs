@@ -12,18 +12,15 @@ namespace AirportProject.Application.Airports.Commands.CreateAirport
             IAirportRepository repository,
             CancellationToken cancellationToken)
         {
-            return await IsNameValid(command.Name, repository, cancellationToken)
+            return IsNameValid(command.Name)
                 && IsCountryValid(command.Country)
-                && IsCityValid(command.City);
+                && IsCityValid(command.City)
+                && await IsUniqueName(command.Name, repository, cancellationToken);
         }
 
-        private static async Task<bool> IsNameValid(
-            string name, 
-            IAirportRepository repository,
-            CancellationToken cancellationToken)
+        private static bool IsNameValid(string name)
         {
-            return IsLengthValid(name)
-                && await IsUniqueName(name, repository, cancellationToken);
+            return IsLengthValid(name);
         }
 
         private static bool IsCountryValid(string country)
