@@ -60,7 +60,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.UpdateAirport
             var handler = new UpdateAirportCommandHandler(mockRepository.Object);
 
             // assert
-            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(command, cancellationToken));
+            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(command, cancellationToken)).Wait();
         }
 
         [TestMethod]
@@ -85,7 +85,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.UpdateAirport
             var handler = new UpdateAirportCommandHandler(mockRepository.Object);
 
             // assert
-            Assert.ThrowsExceptionAsync<NotFoundException>(() => handler.Handle(command, cancellationToken));
+            Assert.ThrowsExceptionAsync<NotFoundException>(() => handler.Handle(command, cancellationToken)).Wait();
             mockRepository.Verify(f => f.Update(command, cancellationToken), Times.Once);
         }
     }

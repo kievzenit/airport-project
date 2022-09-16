@@ -96,7 +96,7 @@ namespace AirportProject.Application.Tests.Flights.Queries.GetFlightById
             var handler = new GetFlightByIdQueryHandler(mockRepository.Object, mockCaster.Object);
 
             // assert
-            Assert.ThrowsExceptionAsync<NotFoundException>(() => handler.Handle(query, cancellationToken));
+            Assert.ThrowsExceptionAsync<NotFoundException>(() => handler.Handle(query, cancellationToken)).Wait();
             mockRepository.Verify(f => f.SearchByFlightNumber(query, cancellationToken), Times.Once);
         }
 
@@ -117,7 +117,7 @@ namespace AirportProject.Application.Tests.Flights.Queries.GetFlightById
             var handler = new GetFlightByIdQueryHandler(mockRepository.Object, mockCaster.Object);
 
             // assert
-            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(query, cancellationToken));
+            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(query, cancellationToken)).Wait();
         }
     }
 }

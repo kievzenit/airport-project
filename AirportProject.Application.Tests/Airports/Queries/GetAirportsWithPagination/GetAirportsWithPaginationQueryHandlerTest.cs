@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace AirportProject.Application.Tests.Airports.Queries.GetAirportsWithPagination
 {
     [TestClass]
-    public class GetAirportWithPaginationQueryHandlerTest
+    public class GetAirportsWithPaginationQueryHandlerTest
     {
         [TestMethod]
         public void Test_QueryHandler_When_QueryIsValid_Then_ShouldReturnValidPageResultDTO()
@@ -71,7 +71,7 @@ namespace AirportProject.Application.Tests.Airports.Queries.GetAirportsWithPagin
             var handler = new GetAirportsWithPaginationQueryHandler(mockRepository.Object, mockCaster.Object);
 
             // assert
-            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(query, cancellationToken));
+            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(query, cancellationToken)).Wait();
         }
     }
 }

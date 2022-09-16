@@ -112,7 +112,7 @@ namespace AirportProject.Application.Tests.Flights.Commands.CreateFlight
             var handler = new CreateFlightCommandHandler(mockRepository.Object, mockCaster.Object);
 
             // assert
-            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(command, cancellationToken));
+            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(command, cancellationToken)).Wait();
         }
     }
 }

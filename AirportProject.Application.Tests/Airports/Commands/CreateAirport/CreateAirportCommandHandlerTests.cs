@@ -80,7 +80,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
             var handler = new CreateAirportCommandHandler(mockRepository.Object, mockCaster.Object);
 
             // assert
-            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(command, cancellationToken));
+            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(command, cancellationToken)).Wait();
         }
 
         [TestMethod]
@@ -103,7 +103,7 @@ namespace AirportProject.Application.Tests.Airports.Commands.CreateAirport
             var handler = new CreateAirportCommandHandler(mockRepository.Object, mockCaster.Object);
 
             // assert
-            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(command, cancellationToken));
+            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(command, cancellationToken)).Wait();
         }
     }
 }

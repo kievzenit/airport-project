@@ -60,7 +60,7 @@ namespace AirportProject.Application.Tests.Flights.Queries.GetFlightsByDeparture
             var cancellationToken = new CancellationTokenSource().Token;
 
             // assert
-            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(query, cancellationToken));
+            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(query, cancellationToken)).Wait();
         }
 
         [TestMethod]
@@ -76,7 +76,7 @@ namespace AirportProject.Application.Tests.Flights.Queries.GetFlightsByDeparture
             var cancellationToken = new CancellationTokenSource().Token;
 
             // assert
-            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(query, cancellationToken));
+            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(query, cancellationToken)).Wait();
         }
     }
 }
