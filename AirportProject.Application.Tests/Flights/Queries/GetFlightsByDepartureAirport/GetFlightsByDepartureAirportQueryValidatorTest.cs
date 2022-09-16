@@ -7,7 +7,7 @@ namespace AirportProject.Application.Tests.Flights.Queries.GetFlightsByDeparture
     public class GetFlightsByDepartureAirportQueryValidatorTest
     {
         [TestMethod]
-        public void Test_QueryHandler_When_QueryIsValid_Then_ShouldreturnTrue()
+        public void Test_QueryHandler_When_QueryIsValid_Then_ShouldReturnTrue()
         {
             // arrange
             var query = new GetFlightsByDepartureAirportQuery("Kiev");
