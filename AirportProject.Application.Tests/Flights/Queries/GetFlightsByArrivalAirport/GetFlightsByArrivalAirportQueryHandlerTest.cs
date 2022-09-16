@@ -45,13 +45,29 @@ namespace AirportProject.Application.Tests.Flights.Queries.GetFlightsByArrivalAi
         }
 
         [TestMethod]
-        public void Test_QueryHandler_When_QueryIsInvalid_Then_ShouldThrowArgumentException()
+        public void Test_QueryHandler_When_QueryArrivalAirportNameIsTooBig_Then_ShouldThrowArgumentException()
         {
             // arrange
             var mockRepository = new Mock<IFlightRepository>(MockBehavior.Strict);
             var mockCaster = new Mock<ICaster<Flight, FlightDTO>>(MockBehavior.Strict);
 
-            var query = new GetFlightsByArrivalAirportQuery("Kiev");
+            var query = new GetFlightsByArrivalAirportQuery(new string('a', 51));
+            var handler = new GetFLightsByArrivalAirportQueryHandler(mockRepository.Object, mockCaster.Object);
+
+            var cancellationToken = new CancellationTokenSource().Token;
+
+            // assert
+            Assert.ThrowsExceptionAsync<ArgumentException>(() => handler.Handle(query, cancellationToken));
+        }
+
+        [TestMethod]
+        public void Test_QueryHandler_When_QueryArrivalAirportNameIsEmpty_Then_ShouldThrowArgumentException()
+        {
+            // arrange
+            var mockRepository = new Mock<IFlightRepository>(MockBehavior.Strict);
+            var mockCaster = new Mock<ICaster<Flight, FlightDTO>>(MockBehavior.Strict);
+
+            var query = new GetFlightsByArrivalAirportQuery(string.Empty);
             var handler = new GetFLightsByArrivalAirportQueryHandler(mockRepository.Object, mockCaster.Object);
 
             var cancellationToken = new CancellationTokenSource().Token;

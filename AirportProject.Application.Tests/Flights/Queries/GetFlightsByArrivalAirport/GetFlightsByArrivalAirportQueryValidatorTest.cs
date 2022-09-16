@@ -7,7 +7,7 @@ namespace AirportProject.Application.Tests.Flights.Queries.GetFlightsByArrivalAi
     public class GetFlightsByArrivalAirportQueryValidatorTest
     {
         [TestMethod]
-        public void Test_QueryHandler_When_QueryIsValid_Then_ShouldreturnTrue()
+        public void Test_QueryHandler_When_QueryIsValid_Then_ShouldReturnTrue()
         {
             // arrange
             var query = new GetFlightsByArrivalAirportQuery("Kiev");
@@ -20,7 +20,7 @@ namespace AirportProject.Application.Tests.Flights.Queries.GetFlightsByArrivalAi
         }
 
         [TestMethod]
-        public void Test_QueryHandler_When_QueryAirportNameIsTooBig_Then_ShouldreturnFalse()
+        public void Test_QueryHandler_When_QueryAirportNameIsTooBig_Then_ShouldReturnFalse()
         {
             // arrange
             var query = new GetFlightsByArrivalAirportQuery(new string('a', 51));
@@ -33,7 +33,7 @@ namespace AirportProject.Application.Tests.Flights.Queries.GetFlightsByArrivalAi
         }
 
         [TestMethod]
-        public void Test_QueryHandler_When_QueryAirportNameIsEmpty_Then_ShouldreturnFalse()
+        public void Test_QueryHandler_When_QueryAirportNameIsEmpty_Then_ShouldReturnFalse()
         {
             // arrange
             var query = new GetFlightsByArrivalAirportQuery(string.Empty);
