@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace AirportProject.Application.Passengers.Commands.CreatePassenger
 {
-    public class CtreatePassengerCommandHandler : IRequestHandler<CreatePassengerCommand, PassengerDTO>
+    public class CreatePassengerCommandHandler : IRequestHandler<CreatePassengerCommand, PassengerDTO>
     {
         private readonly IPassengerRepository repository;
         private readonly ICaster<Passenger, PassengerDTO> caster;
 
-        public CtreatePassengerCommandHandler(
+        public CreatePassengerCommandHandler(
             IPassengerRepository repository, ICaster<Passenger, PassengerDTO> caster)
         {
             this.repository = repository;
