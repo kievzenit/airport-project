@@ -23,7 +23,7 @@ namespace AirportProject.Application.Passengers.Commands.CreatePassenger
         public async Task<PassengerDTO> Handle(
             CreatePassengerCommand request, CancellationToken cancellationToken)
         {
-            if (!request.IsValid())
+            if (!request.IsValid(this.repository))
             {
                 throw new ArgumentException("Input data was not in correct format");
             }
