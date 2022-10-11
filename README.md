@@ -1,6 +1,8 @@
 # Airport Project
 
-It's my exam project of C# project
+[![build](https://github.com/kievzenit/airport-project/actions/workflows/ci-build.yml/badge.svg?branch=main&event=push)](https://github.com/kievzenit/airport-project/actions/workflows/ci-build.yml)
+
+It's my exam project of C# course
 
 ## Installation
 
